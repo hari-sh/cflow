@@ -57,6 +57,21 @@
       }, parent);
       walk(tree);
     }
+    const walknext = () =>  {
+      var _item$children;
+      (_item$children = walknext.item.children) == null || _item$children.forEach(child => {
+          walknext.item = child
+          walknext.cb(child, walknext);         
+      });
+    };
+    
+
+    function modwalkTree(tree, callback) {
+      walknext.item = tree;
+      walknext.cb = callback;
+      walknext.cb(tree, walknext);
+    }
+
     function addClass(className, ...rest) {
       const classList = (className || '').split(' ').filter(Boolean);
       rest.forEach(item => {
@@ -416,7 +431,7 @@
         const fold = (_data$payload = data.payload) != null && _data$payload.fold ? 0 : 1;
         if (recursive) {
           // recursively
-          walkTree(data, (item, next) => {
+          modwalkTree(data, (item, next) => {
             item.payload = _extends({}, item.payload, {
               fold
             });
@@ -450,7 +465,7 @@
         document.body.append(container, style);
         const groupStyle = maxWidth ? `max-width: ${maxWidth}px` : '';
         let foldRecursively = 0;
-        walkTree(node, (item, next, parent) => {
+        modwalkTree(node, (item, next, parent) => {
           var _item$children, _parent$state, _item$payload;
           item.children = (_item$children = item.children) == null ? void 0 : _item$children.map(child => _extends({}, child));
           nodeId += 1;
@@ -492,7 +507,7 @@
           var _node$parentNode;
           (_node$parentNode = node.parentNode) == null || _node$parentNode.append(node.cloneNode(true));
         });
-        walkTree(node, (item, next, parent) => {
+        modwalkTree(node, (item, next, parent) => {
           var _parent$state2;
           const state = item.state;
           const rect = state.el.getBoundingClientRect();
@@ -730,7 +745,7 @@
         const mm = new Markmap(svg, opts);
         if (data) {
           mm.setData(data);
-          mm.fit(); // always fit for the first render
+          mm.fit(); 
         }
     
         return mm;

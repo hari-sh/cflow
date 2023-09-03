@@ -1,6 +1,4 @@
-import json
 
-docstart ='''
 <!DOCTYPE html>
   <html>
   <head>
@@ -24,9 +22,22 @@ docstart ='''
     <script src="../inc/treeview.js"></script>
     <script>
     const datajson = 
-'''
-
-docend = '''
+{
+  "content": "a",
+      "children": [
+        {
+          "content": "b",
+          "children": [
+            {
+              "content": "c"
+            }
+          ]
+        },
+        {
+          "content": "c"
+        }
+      ]
+}
     </script>
     <script>
       const makeDataObj = (dobj) => {
@@ -86,91 +97,15 @@ docend = '''
               treedata = {"content": diagstr};
             console.log(diagstr);
           }
-          ((getMarkmap, getOptions, root, jsonOptions) => {
+        }
+        ((getMarkmap, getOptions, root, jsonOptions) => {
           const markmap = getMarkmap();
           window.mm?.destroy();
           window.mm = markmap.Markmap
           .create('svg#mindmap', 
                   (getOptions || markmap.deriveOptions)(jsonOptions), 
                   root);
-        })(() => window.markmap, null, treedata, {})
-        }
+        })(() => window.markmap, null, datajson, {})
     </script>
   </body>
 </html>
-'''
-
-class QMapNode:
-    def __init__(self, text, level):
-        self.children = []
-        self.text = text
-        self.level = level
-
-    def as_dict(self):
-        if len(self.children) >= 1:
-            return {
-                "content": self.text,
-                "children": [node.as_dict() for node in self.children]
-                }
-        else:
-            return {"content": self.text}
-    
-def getNextItem(lines):
-    try:
-        indline = next(lines)
-        level = len(indline) - len(indline.lstrip())
-        text = indline.strip()
-
-    except StopIteration:
-        text, level = (None, None)
-
-    return (text, level)
-
-def skipDescendants(lines, plevel):
-    text, level = getNextItem(lines)
-    while(text):
-        if((level is not None) and plevel >= level):
-            break
-        plevel = level
-        text, level = getNextItem(lines)
-    return (text, level)
-
-def makedict(lines, pnode):
-    text, level = getNextItem(lines)
-    while(text):
-        if(pnode.level < level):
-            if text in hidict:
-                node = hidict[text]
-                pnode.children.append(node)
-                text, level = skipDescendants(lines, level)
-
-            else:
-                node = QMapNode(text, level)
-                hidict[text] = node
-                pnode.children.append(node)
-                text, level = makedict(lines, node)
-        else:
-            return (text, level)
-    else:
-        return (None, None)
-
-def writehtml(ophtml, jsonstr):
-    ophtml.write(docstart)
-    ophtml.write(jsonstr)
-    ophtml.write(docend)
-
-def htmlmaker(ip, ophtml, diagstr):
-    global hidict
-    hidict = {}
-    global root
-    root = QMapNode(diagstr, -1)
-    makedict(ip, root)
-    writehtml(ophtml, json.dumps(root.as_dict(), indent = 2))
-
-def callermain(ipfile, opfile, diagstr):
-    ip = open(ipfile)
-    op = open(opfile, 'w+')
-    htmlmaker(ip, op, diagstr)
-    ip.close()
-    op.close()
-
