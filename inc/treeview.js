@@ -48,15 +48,7 @@
     function noop() {
       // noop
     }
-    function walkTree(tree, callback) {
-      const walk = (item, parent) => callback(item, () => {
-        var _item$children;
-        (_item$children = item.children) == null || _item$children.forEach(child => {
-          walk(child, item);
-        });
-      }, parent);
-      walk(tree);
-    }
+
     const walknext = () =>  {
       var _item$children;
       (_item$children = walknext.item.children) == null || _item$children.forEach(child => {
