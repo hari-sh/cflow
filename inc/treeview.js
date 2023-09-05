@@ -48,13 +48,17 @@
     function noop() {
       // noop
     }
+    const stopwalk = () => {
 
+    }
     const walknext = () =>  {
-      var _item$children;
-      (_item$children = walknext.item.children) == null || _item$children.forEach(child => {
+      if(walknext.item.children != undefined)
+      {
+        walknext.item.children?.forEach(child => {
           walknext.item = child
-          walknext.cb(child, walknext);         
+          walknext.cb(child, walknext);          
       });
+      } 
     };
     
 
@@ -378,7 +382,7 @@
         this.handleClick = (e, d) => {
           let recursive = this.options.toggleRecursively;
           if (isMacintosh ? e.metaKey : e.ctrlKey) recursive = !recursive;
-          this.toggleNode(d.data, recursive);
+          this.toggleNode(this.state.hashdata, d.data, recursive);
         };
         this.viewHooks = createViewHooks();
         this.svg = svg.datum ? svg : d3.select(svg);
@@ -418,23 +422,31 @@
         const style = this.getStyleContent();
         this.styleNode.text(style);
       }
-      toggleNode(data, recursive = false) {
-        var _data$payload;
-        const fold = (_data$payload = data.payload) != null && _data$payload.fold ? 0 : 1;
-        if (recursive) {
-          // recursively
-          modwalkTree(data, (item, next) => {
-            item.payload = _extends({}, item.payload, {
-              fold
-            });
-            next();
-          });
-        } else {
-          var _data$payload2;
-          data.payload = _extends({}, data.payload, {
-            fold: (_data$payload2 = data.payload) != null && _data$payload2.fold ? 0 : 1
-          });
+      toggleNode(hashdata, data, recursive = false) {
+        var _data$payload2;
+        var _data$fold = (_data$payload2 = data.payload) != null && _data$payload2.fold ? 0 : 1;
+        if(!_data$fold && !data.hasChild){
+          data.hasChild = true;
+          if((data.content in hashdata) && (hashdata[data.content].children?.length > 0))
+          {
+            data.children = [];
+            hashdata[data.content].children.forEach(element=>
+              {
+                var data$childObj = {
+                  content: element.content,
+                  children: [
+                    {content: "NULL"}
+                  ],
+                  payload:{"fold":1}
+                };
+                data.children.push(data$childObj);
+              });
+          }
+          this.initializeData(data);
         }
+        data.payload = _extends({}, data.payload, {
+          fold: _data$fold
+        });
         this.renderData(data);
       }
       initializeData(node) {
@@ -526,10 +538,20 @@
           this.svg.on('wheel', null);
         }
       }
-      setData(data, opts) {
-        if (opts) this.setOptions(opts);
-        if (data) this.state.data = data;
+      setData(hashdata, diagStr) {
+        if(diagStr)
+        {
+          this.state.data = {
+            content: diagStr,
+            children: [
+              {content: "NULL"}
+            ],
+            payload:{"fold":1}
+          };
+        }
+        
         if (!this.state.data) return;
+        if (hashdata) this.state.hashdata = hashdata;
         this.initializeData(this.state.data);
         this.updateStyle();
         this.renderData();
@@ -674,58 +696,7 @@
         const initialZoom = d3.zoomIdentity.translate((offsetWidth - naturalWidth * scale) / 2 - minY * scale, (offsetHeight - naturalHeight * scale) / 2 - minX * scale).scale(scale);
         return this.transition(this.svg).call(this.zoom.transform, initialZoom).end().catch(noop);
       }
-    
-      /**
-       * Pan the content to make the provided node visible in the viewport.
-       */
-      async ensureView(node, padding) {
-        let itemData;
-        this.g.selectAll(childSelector('g')).each(function walk(d) {
-          if (d.data === node) {
-            itemData = d;
-          }
-        });
-        if (!itemData) return;
-        const svgNode = this.svg.node();
-        const {
-          spacingHorizontal
-        } = this.options;
-        const relRect = svgNode.getBoundingClientRect();
-        const transform = d3.zoomTransform(svgNode);
-        const [left, right] = [itemData.y, itemData.y + itemData.ySize - spacingHorizontal + 2].map(x => x * transform.k + transform.x);
-        const [top, bottom] = [itemData.x - itemData.xSize / 2, itemData.x + itemData.xSize / 2].map(y => y * transform.k + transform.y);
-        // Skip if the node includes or is included in the container.
-        const pd = _extends({
-          left: 0,
-          right: 0,
-          top: 0,
-          bottom: 0
-        }, padding);
-        const dxs = [pd.left - left, relRect.width - pd.right - right];
-        const dys = [pd.top - top, relRect.height - pd.bottom - bottom];
-        const dx = dxs[0] * dxs[1] > 0 ? minBy(dxs, Math.abs) / transform.k : 0;
-        const dy = dys[0] * dys[1] > 0 ? minBy(dys, Math.abs) / transform.k : 0;
-        if (dx || dy) {
-          const newTransform = transform.translate(dx, dy);
-          return this.transition(this.svg).call(this.zoom.transform, newTransform).end().catch(noop);
-        }
-      }
-    
-      /**
-       * Scale content with it pinned at the center of the viewport.
-       */
-      async rescale(scale) {
-        const svgNode = this.svg.node();
-        const {
-          width: offsetWidth,
-          height: offsetHeight
-        } = svgNode.getBoundingClientRect();
-        const halfWidth = offsetWidth / 2;
-        const halfHeight = offsetHeight / 2;
-        const transform = d3.zoomTransform(svgNode);
-        const newTransform = transform.translate((halfWidth - transform.x) * (1 - scale) / transform.k, (halfHeight - transform.y) * (1 - scale) / transform.k).scale(scale);
-        return this.transition(this.svg).call(this.zoom.transform, newTransform).end().catch(noop);
-      }
+
       destroy() {
         this.svg.on('.zoom', null);
         this.svg.html(null);
@@ -733,10 +704,10 @@
           fn();
         });
       }
-      static create(svg, opts, data = null) {
-        const mm = new Markmap(svg, opts);
+      static create(svg, hashdata, data = null) {
+        const mm = new Markmap(svg, null);
         if (data) {
-          mm.setData(data);
+          mm.setData(hashdata,data);
           mm.fit(); 
         }
     

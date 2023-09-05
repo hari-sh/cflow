@@ -1,0 +1,20 @@
+// (function (exports, npm2url, d3) {
+//       const index = d3.minIndex(numbers, by);
+//     const defaultColorFn = d3.scaleOrdinal(d3.schemeCategory10);
+//           const transform = d3.zoomTransform(this.svg.node());
+//         this.svg = svg.datum ? svg : d3.select(svg);
+//         this.zoom = d3.zoom().filter(event => {
+//         const layout = d3.flextree({}).children(d => {
+//         const linkShape = d3.linkHorizontal();
+//         const minX = d3.min(descendants, d => d.x - d.xSize / 2);
+//         const maxX = d3.max(descendants, d => d.x + d.xSize / 2);
+//         const minY = d3.min(descendants, d => d.y);
+//         const maxY = d3.max(descendants, d => d.y + d.ySize - spacingHorizontal);
+//         const initialZoom = d3.zoomIdentity.translate((offsetWidth - naturalWidth * scale) / 2 - minY * scale, (offsetHeight - naturalHeight * scale) / 2 - minX * scale).scale(scale);
+//         const transform = d3.zoomTransform(svgNode);
+//         const transform = d3.zoomTransform(svgNode);
+//         const colorFn = d3.scaleOrdinal(color);
+//     })(this.markmap = this.markmap || {}, null, d3);
+
+
+//     d3.zoom

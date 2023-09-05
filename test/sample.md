@@ -1,0 +1,8 @@
+- this node is expanded
+  - a
+  - b
+  - c
+- this node is folded <!-- fold -->
+  - d
+  - e
+  - f

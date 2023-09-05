@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
   <html>
   <head>
@@ -22,10 +23,7 @@
     <script>
     const datajson = 
 {
-  "content": "sample",
-  "children": [
-    {
-      "content": "a",
+  "content": "a",
       "children": [
         {
           "content": "b",
@@ -36,47 +34,11 @@
           ]
         },
         {
-          "content": "d",
-          "children": [
-            {
-              "content": "e"
-            },
-            {
-              "content": "x",
-              "children": [
-                {
-                  "content": "n"
-                }
-              ]
-            },
-            {
-              "content": "g"
-            }
-          ]
-        },
-        {
-          "content": "h",
-          "children": [
-            {
-              "content": "i",
-              "children": [
-                {
-                  "content": "d"
-                }
-              ]
-            },
-            {
-              "content": "b"
-            }
-          ]
-        },
-        {
-          "content": "m"
+          "content": "d"
         }
       ]
-    }
-  ]
 }
+
     </script>
     <script>
       const makeDataObj = (dobj) => {
@@ -95,7 +57,7 @@
         const diagstr = document.getElementById('diaginput').value;
         document.getElementById('diaginput').value = "";
         window.mm?.destroy();
-        window.mm = window.markmap.Markmap.create('svg#mindmap', hashdata, diagstr);
+        window.mm = window.markmap.Markmap.create('svg#mindmap', hashdata, "a");
       }
     </script>
     <script>

@@ -1,7 +1,6 @@
 import json
 
-docstart ='''
-<!DOCTYPE html>
+docstart ='''<!DOCTYPE html>
   <html>
   <head>
     <meta charset="UTF-8">
@@ -41,60 +40,22 @@ docend = '''
         }
         return dataObj;
       }
-      const hashdata = makeDataObj(datajson);
-      for(let hkey in hashdata)
-      {
-        var hval = hashdata[hkey];
-        console.log(hval.content + "->" + hval.children?.map(o=>o.content));
+      const loadTreeData = (hashdata) => {
+        const diagstr = document.getElementById('diaginput').value;
+        document.getElementById('diaginput').value = "";
+        window.mm?.destroy();
+        window.mm = window.markmap.Markmap.create('svg#mindmap', hashdata, diagstr);
       }
-
-      const makeTreeObj = (obj) => {
-        var dataObj = {};
-        const stack = [obj];
-        while (stack?.length > 0){
-          var currentObj = stack.pop();
-          currentObj.children?.forEach((cobj, ind, arr) => {
-            if((cobj.content in hashdata) && (cobj != hashdata[cobj.content]))
-            {
-              arr[ind] = hashdata[cobj.content];
-            }
-            stack.push(arr[ind]);
-          });
-        }
-      }
-
     </script>
     <script>
-        document.getElementById("diagbtn").addEventListener("click", loadTreeData);
-        document.getElementById('diaginput').addEventListener('keypress', function (e) {
-          if (e.key === 'Enter') {
-            e.preventDefault()
-            loadTreeData();
-          }
-        });
-        function loadTreeData() {
-          const diagstr = document.getElementById('diaginput').value;
-          document.getElementById('diaginput').value = "";
-          treedata = {};
-          if(diagstr in hashdata)
-          {
-            makeTreeObj(hashdata[diagstr]);
-            treedata = hashdata[diagstr];
-          }
-          else
-          {
-              treedata = {"content": diagstr};
-            console.log(diagstr);
-          }
-          ((getMarkmap, getOptions, root, jsonOptions) => {
-          const markmap = getMarkmap();
-          window.mm?.destroy();
-          window.mm = markmap.Markmap
-          .create('svg#mindmap', 
-                  (getOptions || markmap.deriveOptions)(jsonOptions), 
-                  root);
-        })(() => window.markmap, null, treedata, {})
+      const hashdata = makeDataObj(datajson);
+      document.getElementById("diagbtn").addEventListener("click", loadTreeData);
+      document.getElementById('diaginput').addEventListener('keypress', function (e) {
+        if (e.key === 'Enter') {
+          e.preventDefault()
+          loadTreeData(hashdata);
         }
+      });
     </script>
   </body>
 </html>
@@ -139,16 +100,9 @@ def makedict(lines, pnode):
     text, level = getNextItem(lines)
     while(text):
         if(pnode.level < level):
-            if text in hidict:
-                node = hidict[text]
-                pnode.children.append(node)
-                text, level = skipDescendants(lines, level)
-
-            else:
-                node = QMapNode(text, level)
-                hidict[text] = node
-                pnode.children.append(node)
-                text, level = makedict(lines, node)
+            node = QMapNode(text, level)
+            pnode.children.append(node)
+            text, level = makedict(lines, node)
         else:
             return (text, level)
     else:
