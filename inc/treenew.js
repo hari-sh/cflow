@@ -48,26 +48,15 @@
     function noop() {
       // noop
     }
-    const stopwalk = () => {
-
+    function walkTree(tree, callback) {
+      const walk = (item, parent) => callback(item, () => {
+        var _item$children;
+        (_item$children = item.children) == null || _item$children.forEach(child => {
+          walk(child, item);
+        });
+      }, parent);
+      walk(tree);
     }
-    const walknext = () =>  {
-      if(walknext.item.children != undefined)
-      {
-        walknext.item.children?.forEach(child => {
-          walknext.item = child
-          walknext.cb(child, walknext);          
-      });
-      } 
-    };
-    
-
-    function modwalkTree(tree, callback) {
-      walknext.item = tree;
-      walknext.cb = callback;
-      walknext.cb(tree, walknext);
-    }
-
     function addClass(className, ...rest) {
       const classList = (className || '').split(' ').filter(Boolean);
       rest.forEach(item => {
@@ -440,14 +429,14 @@
                   payload:{"fold":1}
                 };
                 data.children.push(data$childObj);
-              });
-          }
+            });
+            }
           this.initializeData(data);
         }
-        data.payload = _extends({}, data.payload, {
-          fold: _data$fold
-        });
-        this.renderData(data);
+          data.payload = _extends({}, data.payload, {
+            fold: _data$fold
+          });
+                this.renderData(data);
       }
       initializeData(node) {
         let nodeId = 0;
@@ -469,7 +458,7 @@
         document.body.append(container, style);
         const groupStyle = maxWidth ? `max-width: ${maxWidth}px` : '';
         let foldRecursively = 0;
-        modwalkTree(node, (item, next, parent) => {
+        walkTree(node, (item, next, parent) => {
           var _item$children, _parent$state, _item$payload;
           item.children = (_item$children = item.children) == null ? void 0 : _item$children.map(child => _extends({}, child));
           nodeId += 1;
@@ -511,7 +500,7 @@
           var _node$parentNode;
           (_node$parentNode = node.parentNode) == null || _node$parentNode.append(node.cloneNode(true));
         });
-        modwalkTree(node, (item, next, parent) => {
+        walkTree(node, (item, next, parent) => {
           var _parent$state2;
           const state = item.state;
           const rect = state.el.getBoundingClientRect();
@@ -672,9 +661,6 @@
         return sel.transition().duration(duration);
       }
     
-      /**
-       * Fit the content to the viewport.
-       */
       async fit() {
         const svgNode = this.svg.node();
         const {
@@ -696,7 +682,7 @@
         const initialZoom = d3.zoomIdentity.translate((offsetWidth - naturalWidth * scale) / 2 - minY * scale, (offsetHeight - naturalHeight * scale) / 2 - minX * scale).scale(scale);
         return this.transition(this.svg).call(this.zoom.transform, initialZoom).end().catch(noop);
       }
-
+    
       destroy() {
         this.svg.on('.zoom', null);
         this.svg.html(null);
@@ -704,16 +690,18 @@
           fn();
         });
       }
+
       static create(svg, hashdata, data = null) {
         const mm = new Markmap(svg, null);
         if (data) {
           mm.setData(hashdata,data);
-          mm.fit(); 
+          mm.fit();
         }
     
         return mm;
       }
     }
+
     Markmap.defaultOptions = {
       autoFit: false,
       color: node => {
@@ -734,10 +722,10 @@
       pan: true,
       toggleRecursively: false
     };
-    
+        
     exports.Markmap = Markmap;
     exports.defaultColorFn = defaultColorFn;
-    exports.globalCSS = globalCSS;
+        exports.globalCSS = globalCSS;
     exports.loadCSS = loadCSS;
     exports.loadJS = loadJS;
     exports.refreshHook = refreshHook;
