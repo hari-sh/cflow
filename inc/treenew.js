@@ -1,4 +1,3 @@
-/*! markmap-view v0.15.4 | MIT License */
 (function (exports, npm2url, d3) {
     'use strict';
     
@@ -91,7 +90,6 @@
       };
     }
     
-    /*! @gera2ld/jsx-dom v2.2.2 | ISC License */
     const VTYPE_ELEMENT = 1;
     const VTYPE_FUNCTION = 2;
     const SVG_NS = 'http://www.w3.org/2000/svg';
@@ -333,10 +331,7 @@
       const data = nodeData.data;
       return Math.max(4 - 2 * data.depth, 1.5);
     }
-    function minBy(numbers, by) {
-      const index = d3.minIndex(numbers, by);
-      return numbers[index];
-    }
+
     function stopPropagation(e) {
       e.stopPropagation();
     }
@@ -383,7 +378,6 @@
           }
           return (!event.ctrlKey || event.type === 'wheel') && !event.button;
         }).on('zoom', this.handleZoom);
-        this.setOptions(opts);
         this.state = {
           id: this.options.id || this.svg.attr('id') || getId(),
           minX: 0,
@@ -492,10 +486,6 @@
         });
         const nodes = Array.from(container.childNodes).map(group => group.firstChild);
         this.viewHooks.transformHtml.call(this, nodes);
-        // Clone the rendered HTML and set `white-space: nowrap` to it to detect its max-width.
-        // The parent node will have a width of the max-width and the original content without
-        // `white-space: nowrap` gets re-layouted, then we will get the expected layout, with
-        // content in one line as much as possible, and subjecting to the given max-width.
         nodes.forEach(node => {
           var _node$parentNode;
           (_node$parentNode = node.parentNode) == null || _node$parentNode.append(node.cloneNode(true));
@@ -507,26 +497,13 @@
           item.content = state.el.innerHTML;
           state.size = [Math.ceil(rect.width) + 1, Math.max(Math.ceil(rect.height), nodeMinHeight)];
           state.key = [parent == null || (_parent$state2 = parent.state) == null ? void 0 : _parent$state2.id, state.id].filter(Boolean).join('.') +
-          // FIXME: find a way to check content hash
           item.content;
           next();
         });
         container.remove();
         style.remove();
       }
-      setOptions(opts) {
-        this.options = _extends({}, this.options, opts);
-        if (this.options.zoom) {
-          this.svg.call(this.zoom);
-        } else {
-          this.svg.on('.zoom', null);
-        }
-        if (this.options.pan) {
-          this.svg.on('wheel', this.handlePan);
-        } else {
-          this.svg.on('wheel', null);
-        }
-      }
+
       setData(hashdata, diagStr) {
         if(diagStr)
         {
@@ -697,7 +674,6 @@
           mm.setData(hashdata,data);
           mm.fit();
         }
-    
         return mm;
       }
     }
@@ -725,7 +701,7 @@
         
     exports.Markmap = Markmap;
     exports.defaultColorFn = defaultColorFn;
-        exports.globalCSS = globalCSS;
+    exports.globalCSS = globalCSS;
     exports.loadCSS = loadCSS;
     exports.loadJS = loadJS;
     exports.refreshHook = refreshHook;
