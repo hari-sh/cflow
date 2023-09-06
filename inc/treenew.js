@@ -378,6 +378,7 @@
           }
           return (!event.ctrlKey || event.type === 'wheel') && !event.button;
         }).on('zoom', this.handleZoom);
+        this.setOptions(opts);
         this.state = {
           id: this.options.id || this.svg.attr('id') || getId(),
           minX: 0,
@@ -503,7 +504,19 @@
         container.remove();
         style.remove();
       }
-
+      setOptions(opts) {
+        this.options = _extends({}, this.options, opts);
+        if (this.options.zoom) {
+          this.svg.call(this.zoom);
+        } else {
+          this.svg.on('.zoom', null);
+        }
+        if (this.options.pan) {
+          this.svg.on('wheel', this.handlePan);
+        } else {
+          this.svg.on('wheel', null);
+        }
+      }
       setData(hashdata, diagStr) {
         if(diagStr)
         {
