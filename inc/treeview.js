@@ -1,4 +1,3 @@
-/*! markmap-view v0.15.4 | MIT License */
 (function (exports, npm2url, d3) {
     'use strict';
     
@@ -46,28 +45,16 @@
       return `mm-${uniqId}-${globalIndex}`;
     }
     function noop() {
-      // noop
     }
-    const stopwalk = () => {
-
+    function walkTree(tree, callback) {
+      const walk = (item, parent) => callback(item, () => {
+        var _item$children;
+        (_item$children = item.children) == null || _item$children.forEach(child => {
+          walk(child, item);
+        });
+      }, parent);
+      walk(tree);
     }
-    const walknext = () =>  {
-      if(walknext.item.children != undefined)
-      {
-        walknext.item.children?.forEach(child => {
-          walknext.item = child
-          walknext.cb(child, walknext);          
-      });
-      } 
-    };
-    
-
-    function modwalkTree(tree, callback) {
-      walknext.item = tree;
-      walknext.cb = callback;
-      walknext.cb(tree, walknext);
-    }
-
     function addClass(className, ...rest) {
       const classList = (className || '').split(' ').filter(Boolean);
       rest.forEach(item => {
@@ -102,7 +89,6 @@
       };
     }
     
-    /*! @gera2ld/jsx-dom v2.2.2 | ISC License */
     const VTYPE_ELEMENT = 1;
     const VTYPE_FUNCTION = 2;
     const SVG_NS = 'http://www.w3.org/2000/svg';
@@ -244,17 +230,9 @@
       }
       throw new Error('mount: Invalid Vnode!');
     }
-    
-    /**
-     * Mount vdom as real DOM nodes.
-     */
     function mountDom(vnode) {
       return mount(vnode);
     }
-    
-    /**
-     * Render and mount without returning VirtualDOM, useful when you don't need SVG support.
-     */
     function hm(...args) {
       return mountDom(h(...args));
     }
@@ -280,7 +258,6 @@
               onError: reject
             })));
             if (!src) {
-              // Run inline script synchronously
               resolve(undefined);
             }
           }).then(() => {
@@ -344,10 +321,7 @@
       const data = nodeData.data;
       return Math.max(4 - 2 * data.depth, 1.5);
     }
-    function minBy(numbers, by) {
-      const index = d3.minIndex(numbers, by);
-      return numbers[index];
-    }
+
     function stopPropagation(e) {
       e.stopPropagation();
     }
@@ -356,10 +330,7 @@
         transformHtml: new Hook()
       };
     }
-    
-    /**
-     * A global hook to refresh all markmaps when called.
-     */
+
     const refreshHook = new Hook();
     const defaultColorFn = d3.scaleOrdinal(d3.schemeCategory10);
     const isMacintosh = typeof navigator !== 'undefined' && navigator.userAgent.includes('Macintosh');
@@ -389,7 +360,6 @@
         this.styleNode = this.svg.append('style');
         this.zoom = d3.zoom().filter(event => {
           if (this.options.scrollForPan) {
-            // Pan with wheels, zoom with ctrl+wheels
             if (event.type === 'wheel') return event.ctrlKey && !event.button;
           }
           return (!event.ctrlKey || event.type === 'wheel') && !event.button;
@@ -440,14 +410,14 @@
                   payload:{"fold":1}
                 };
                 data.children.push(data$childObj);
-              });
-          }
+            });
+            }
           this.initializeData(data);
         }
-        data.payload = _extends({}, data.payload, {
-          fold: _data$fold
-        });
-        this.renderData(data);
+          data.payload = _extends({}, data.payload, {
+            fold: _data$fold
+          });
+                this.renderData(data);
       }
       initializeData(node) {
         let nodeId = 0;
@@ -469,7 +439,7 @@
         document.body.append(container, style);
         const groupStyle = maxWidth ? `max-width: ${maxWidth}px` : '';
         let foldRecursively = 0;
-        modwalkTree(node, (item, next, parent) => {
+        walkTree(node, (item, next, parent) => {
           var _item$children, _parent$state, _item$payload;
           item.children = (_item$children = item.children) == null ? void 0 : _item$children.map(child => _extends({}, child));
           nodeId += 1;
@@ -503,22 +473,17 @@
         });
         const nodes = Array.from(container.childNodes).map(group => group.firstChild);
         this.viewHooks.transformHtml.call(this, nodes);
-        // Clone the rendered HTML and set `white-space: nowrap` to it to detect its max-width.
-        // The parent node will have a width of the max-width and the original content without
-        // `white-space: nowrap` gets re-layouted, then we will get the expected layout, with
-        // content in one line as much as possible, and subjecting to the given max-width.
         nodes.forEach(node => {
           var _node$parentNode;
           (_node$parentNode = node.parentNode) == null || _node$parentNode.append(node.cloneNode(true));
         });
-        modwalkTree(node, (item, next, parent) => {
+        walkTree(node, (item, next, parent) => {
           var _parent$state2;
           const state = item.state;
           const rect = state.el.getBoundingClientRect();
           item.content = state.el.innerHTML;
           state.size = [Math.ceil(rect.width) + 1, Math.max(Math.ceil(rect.height), nodeMinHeight)];
           state.key = [parent == null || (_parent$state2 = parent.state) == null ? void 0 : _parent$state2.id, state.id].filter(Boolean).join('.') +
-          // FIXME: find a way to check content hash
           item.content;
           next();
         });
@@ -636,7 +601,6 @@
         }, update => update, exit => exit.remove()).attr('width', d => Math.max(0, d.ySize - spacingHorizontal - paddingX * 2)).attr('height', d => d.xSize);
         this.transition(foreignObject).style('opacity', 1);
     
-        // Update the links
         const path = this.g.selectAll(childSelector('path')).data(links, d => d.target.data.state.key).join(enter => {
           const source = [y0 + origin.ySize - spacingHorizontal, x0 + origin.xSize / 2];
           return enter.insert('path', 'g').attr('class', 'markmap-link').attr('data-depth', d => d.target.data.depth).attr('data-path', d => d.target.data.state.path).attr('d', linkShape({
@@ -672,9 +636,6 @@
         return sel.transition().duration(duration);
       }
     
-      /**
-       * Fit the content to the viewport.
-       */
       async fit() {
         const svgNode = this.svg.node();
         const {
@@ -696,7 +657,7 @@
         const initialZoom = d3.zoomIdentity.translate((offsetWidth - naturalWidth * scale) / 2 - minY * scale, (offsetHeight - naturalHeight * scale) / 2 - minX * scale).scale(scale);
         return this.transition(this.svg).call(this.zoom.transform, initialZoom).end().catch(noop);
       }
-
+    
       destroy() {
         this.svg.on('.zoom', null);
         this.svg.html(null);
@@ -704,16 +665,17 @@
           fn();
         });
       }
+
       static create(svg, hashdata, data = null) {
         const mm = new Markmap(svg, null);
         if (data) {
           mm.setData(hashdata,data);
-          mm.fit(); 
+          mm.fit();
         }
-    
         return mm;
       }
     }
+
     Markmap.defaultOptions = {
       autoFit: false,
       color: node => {
@@ -734,7 +696,7 @@
       pan: true,
       toggleRecursively: false
     };
-    
+        
     exports.Markmap = Markmap;
     exports.defaultColorFn = defaultColorFn;
     exports.globalCSS = globalCSS;
