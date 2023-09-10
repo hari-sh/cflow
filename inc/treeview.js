@@ -494,7 +494,8 @@
         const naturalWidth = maxY - minY;
         const naturalHeight = maxX - minX;
         const scale = Math.min(offsetWidth / naturalWidth * fitRatio, offsetHeight / naturalHeight * fitRatio, 2);
-        const initialZoom = d3.zoomIdentity.translate((offsetWidth - naturalWidth * scale) / 2 - minY * scale, (offsetHeight - naturalHeight * scale) / 2 - minX * scale).scale(scale);
+        // const initialZoom = d3.zoomIdentity.translate((offsetWidth - naturalWidth * scale) / 2 - minY * scale, (offsetHeight - naturalHeight * scale) / 2 - minX * scale).scale(scale);
+        const initialZoom = d3.zoomIdentity.translate(50,(offsetHeight - naturalHeight * scale) / 2 - minX * scale).scale(scale);
         return this.transition(this.svg).call(this.zoom.transform, initialZoom).end().catch(noop);
       }
     

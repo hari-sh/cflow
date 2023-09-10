@@ -9,7 +9,7 @@
             "type": "chrome",
             "request": "launch",
             "name": "Open sample.html",
-            "file": "/opt/codes/inputbox/ibgit/html/sample.html"
+            "file": "/opt/codes/inputbox/ibgit/txt/sample.html"
         }
     ]
 }

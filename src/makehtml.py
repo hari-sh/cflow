@@ -15,50 +15,25 @@ docstart ='''<!DOCTYPE html>
         <form>
         <input id="diaginput" type="text" placeholder="Search...">
         <button id="diagbtn" type="button">Search</button>
+        <div class="suggestions">
+          <ul></ul>
+        </div>
         </form>
     </div>
+
     <svg id="mindmap"></svg>
     <script src="../inc/d3.js"></script>
     <script src="../inc/d3-flextree.js"></script>
     <script src="../inc/treeview.js"></script>
     <script>
-    const datajson = 
+const datajson =
 '''
 
-docend = '''
-    </script>
-    <script>
-      const makeDataObj = (dobj) => {
-        var dataObj = {};
-        var stack = [dobj];
-        while (stack?.length > 0){
-          const curnObj = stack.pop();
-          if(curnObj.children?.length > 0){
-            dataObj[curnObj.content] = curnObj;
-          }
-          curnObj.children?.forEach(cobj => stack.push(cobj));
-        }
-        return dataObj;
-      }
-      const loadTreeData = (hashdata) => {
-        const diagstr = document.getElementById('diaginput').value;
-        document.getElementById('diaginput').value = "";
-        window.mm?.destroy();
-        window.mm = window.markmap.Markmap.create('svg#mindmap', hashdata, diagstr);
-      }
-    </script>
-    <script>
-      const hashdata = makeDataObj(datajson);
-      document.getElementById("diagbtn").addEventListener("click", loadTreeData);
-      document.getElementById('diaginput').addEventListener('keypress', function (e) {
-        if (e.key === 'Enter') {
-          e.preventDefault()
-          loadTreeData(hashdata);
-        }
-      });
-    </script>
+docend = '''  </script>
+    <script src="../inc/treeloader.js"></script>
   </body>
 </html>
+
 '''
 
 class QMapNode:
