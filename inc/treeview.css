@@ -26,11 +26,12 @@ body {
     right:25px;
     position:absolute;
     width: 350;
+    
   }
   
-  form {
+  #inputcont {
     color: #555;
-    display: flex;
+    display: none;
     padding: 2px;
     border: 1px solid currentColor;
     border-radius: 5px;
@@ -76,3 +77,35 @@ body {
     border-color: #1183d6;
     outline: none;
   }
+
+
+.container .suggestions {
+  position: absolute;
+  top: 60px;
+}
+
+ul {
+  display: none;
+  list-style-type: none;
+  padding: 0;
+  margin: 0;
+  box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.2);
+  max-height: 200px;
+  overflow-y: auto;
+  width:310px;
+}
+ul.has-suggestions {
+  display: block;
+}
+ul li {
+  padding: 10px;
+  cursor: pointer;
+  background: rgba(174, 188, 195, 0.3);
+}
+ul li:hover {
+  background-color: rgba(174, 188, 195, 0.5);
+}
+
+input {
+  border-bottom: 2px solid #e65c00;
+}

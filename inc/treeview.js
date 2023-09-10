@@ -1,28 +1,5 @@
-/*! markmap-view v0.15.4 | MIT License */
-(function (exports, npm2url, d3) {
+(function (exports, d3) {
     'use strict';
-    
-    class Hook {
-      constructor() {
-        this.listeners = [];
-      }
-      tap(fn) {
-        this.listeners.push(fn);
-        return () => this.revoke(fn);
-      }
-      revoke(fn) {
-        const i = this.listeners.indexOf(fn);
-        if (i >= 0) this.listeners.splice(i, 1);
-      }
-      revokeAll() {
-        this.listeners.splice(0);
-      }
-      call(...args) {
-        for (const fn of this.listeners) {
-          fn(...args);
-        }
-      }
-    }
     
     function _extends() {
       _extends = Object.assign ? Object.assign.bind() : function (target) {
@@ -39,33 +16,7 @@
       return _extends.apply(this, arguments);
     }
     
-    const uniqId = Math.random().toString(36).slice(2, 8);
-    let globalIndex = 0;
-    function getId() {
-      globalIndex += 1;
-      return `mm-${uniqId}-${globalIndex}`;
-    }
     function noop() {
-      // noop
-    }
-    const stopwalk = () => {
-
-    }
-    const walknext = () =>  {
-      if(walknext.item.children != undefined)
-      {
-        walknext.item.children?.forEach(child => {
-          walknext.item = child
-          walknext.cb(child, walknext);          
-      });
-      } 
-    };
-    
-
-    function modwalkTree(tree, callback) {
-      walknext.item = tree;
-      walknext.cb = callback;
-      walknext.cb(tree, walknext);
     }
 
     function addClass(className, ...rest) {
@@ -75,6 +26,7 @@
       });
       return classList.join(' ');
     }
+
     function childSelector(filter) {
       if (typeof filter === 'string') {
         const tagName = filter;
@@ -87,24 +39,8 @@
         return nodes;
       };
     }
-    function memoize(fn) {
-      const cache = {};
-      return function memoized(...args) {
-        const key = `${args[0]}`;
-        let data = cache[key];
-        if (!data) {
-          data = {
-            value: fn(...args)
-          };
-          cache[key] = data;
-        }
-        return data.value;
-      };
-    }
-    
-    /*! @gera2ld/jsx-dom v2.2.2 | ISC License */
+
     const VTYPE_ELEMENT = 1;
-    const VTYPE_FUNCTION = 2;
     const SVG_NS = 'http://www.w3.org/2000/svg';
     const XLINK_NS = 'http://www.w3.org/1999/xlink';
     const NS_ATTRS = {
@@ -115,34 +51,30 @@
     
     const isLeaf = c => typeof c === 'string' || typeof c === 'number';
     const isElement = c => (c == null ? void 0 : c.vtype) === VTYPE_ELEMENT;
-    const isRenderFunction = c => (c == null ? void 0 : c.vtype) === VTYPE_FUNCTION;
-    function h(type, props, ...children) {
-      props = Object.assign({}, props, {
-        children: children.length === 1 ? children[0] : children
-      });
-      return jsx(type, props);
-    }
+
     function jsx(type, props) {
       let vtype;
-      if (typeof type === 'string') vtype = VTYPE_ELEMENT;else if (typeof type === 'function') vtype = VTYPE_FUNCTION;else throw new Error('Invalid VNode type');
+      if (typeof type === 'string') 
+        vtype = VTYPE_ELEMENT;
       return {
         vtype,
         type,
         props
       };
     }
-    function Fragment(props) {
-      return props.children;
-    }
     
     const DEFAULT_ENV = {
       isSvg: false
     };
+
     function insertDom(parent, nodes) {
-      if (!Array.isArray(nodes)) nodes = [nodes];
+      if (!Array.isArray(nodes)) 
+        nodes = [nodes];
       nodes = nodes.filter(Boolean);
-      if (nodes.length) parent.append(...nodes);
+      if (nodes.length) 
+        parent.append(...nodes);
     }
+
     function mountAttributes(domElement, props, env) {
       for (const key in props) {
         if (key === 'key' || key === 'children' || key === 'ref') continue;
@@ -184,28 +116,6 @@
       return Array.isArray(children) ? flatten(children.map(child => mountChildren(child, env))) : mount(children, env);
     }
     function mount(vnode, env = DEFAULT_ENV) {
-      if (vnode == null || typeof vnode === 'boolean') {
-        return null;
-      }
-      if (vnode instanceof Node) {
-        return vnode;
-      }
-      if (isRenderFunction(vnode)) {
-        const {
-          type,
-          props
-        } = vnode;
-        if (type === Fragment) {
-          const node = document.createDocumentFragment();
-          if (props.children) {
-            const children = mountChildren(props.children, env);
-            insertDom(node, children);
-          }
-          return node;
-        }
-        const childVNode = type(props);
-        return mount(childVNode, env);
-      }
       if (isLeaf(vnode)) {
         return document.createTextNode(`${vnode}`);
       }
@@ -244,97 +154,7 @@
       }
       throw new Error('mount: Invalid Vnode!');
     }
-    
-    /**
-     * Mount vdom as real DOM nodes.
-     */
-    function mountDom(vnode) {
-      return mount(vnode);
-    }
-    
-    /**
-     * Render and mount without returning VirtualDOM, useful when you don't need SVG support.
-     */
-    function hm(...args) {
-      return mountDom(h(...args));
-    }
-    
-    const memoizedPreloadJS = memoize(url => {
-      document.head.append(hm('link', {
-        rel: 'preload',
-        as: 'script',
-        href: url
-      }));
-    });
-    const jsCache = {};
-    const cssCache = {};
-    async function loadJSItem(item, context) {
-      var _item$data;
-      const src = item.type === 'script' && ((_item$data = item.data) == null ? void 0 : _item$data.src) || '';
-      item.loaded || (item.loaded = jsCache[src]);
-      if (!item.loaded) {
-        if (item.type === 'script') {
-          item.loaded = new Promise((resolve, reject) => {
-            document.head.append(hm('script', _extends({}, item.data, {
-              onLoad: resolve,
-              onError: reject
-            })));
-            if (!src) {
-              // Run inline script synchronously
-              resolve(undefined);
-            }
-          }).then(() => {
-            item.loaded = true;
-          });
-          if (src) jsCache[src] = item.loaded;
-        }
-        if (item.type === 'iife') {
-          const {
-            fn,
-            getParams
-          } = item.data;
-          fn(...((getParams == null ? void 0 : getParams(context)) || []));
-          item.loaded = true;
-        }
-      }
-      await item.loaded;
-    }
-    function loadCSSItem(item) {
-      const url = item.type === 'stylesheet' && item.data.href || '';
-      item.loaded || (item.loaded = cssCache[url]);
-      if (item.loaded) return;
-      item.loaded = true;
-      if (url) cssCache[url] = true;
-      if (item.type === 'style') {
-        document.head.append(hm('style', {
-          textContent: item.data
-        }));
-      } else if (item.type === 'stylesheet') {
-        document.head.append(hm('link', _extends({
-          rel: 'stylesheet'
-        }, item.data)));
-      }
-    }
-    async function loadJS(items, context) {
-      items.forEach(item => {
-        var _item$data2;
-        if (item.type === 'script' && (_item$data2 = item.data) != null && _item$data2.src) {
-          memoizedPreloadJS(item.data.src);
-        }
-      });
-      context = _extends({
-        getMarkmap: () => window.markmap
-      }, context);
-      for (const item of items) {
-        await loadJSItem(item, context);
-      }
-    }
-    function loadCSS(items) {
-      for (const item of items) {
-        loadCSSItem(item);
-      }
-    }
-    
+
     var css_248z$1 = ".markmap{font:300 16px/20px sans-serif}.markmap-link{fill:none}.markmap-node>circle{cursor:pointer}.markmap-foreign{display:inline-block}.markmap-foreign a{color:#0097e6}.markmap-foreign a:hover{color:#00a8ff}.markmap-foreign code{background-color:#f0f0f0;border-radius:2px;color:#555;font-size:calc(1em - 2px);padding:.25em}.markmap-foreign pre{margin:0}.markmap-foreign pre>code{display:block}.markmap-foreign del{text-decoration:line-through}.markmap-foreign em{font-style:italic}.markmap-foreign strong{font-weight:700}.markmap-foreign mark{background:#ffeaa7}";
     
     var css_248z = ".markmap-container{height:0;left:-100px;overflow:hidden;position:absolute;top:-100px;width:0}.markmap-container>.markmap-foreign{display:inline-block}.markmap-container>.markmap-foreign>div:last-child,.markmap-container>.markmap-foreign>div:last-child *{white-space:nowrap}";
@@ -344,23 +164,11 @@
       const data = nodeData.data;
       return Math.max(4 - 2 * data.depth, 1.5);
     }
-    function minBy(numbers, by) {
-      const index = d3.minIndex(numbers, by);
-      return numbers[index];
-    }
+
     function stopPropagation(e) {
       e.stopPropagation();
     }
-    function createViewHooks() {
-      return {
-        transformHtml: new Hook()
-      };
-    }
-    
-    /**
-     * A global hook to refresh all markmaps when called.
-     */
-    const refreshHook = new Hook();
+
     const defaultColorFn = d3.scaleOrdinal(d3.schemeCategory10);
     const isMacintosh = typeof navigator !== 'undefined' && navigator.userAgent.includes('Macintosh');
     class Markmap {
@@ -384,28 +192,24 @@
           if (isMacintosh ? e.metaKey : e.ctrlKey) recursive = !recursive;
           this.toggleNode(this.state.hashdata, d.data, recursive);
         };
-        this.viewHooks = createViewHooks();
         this.svg = svg.datum ? svg : d3.select(svg);
         this.styleNode = this.svg.append('style');
         this.zoom = d3.zoom().filter(event => {
           if (this.options.scrollForPan) {
-            // Pan with wheels, zoom with ctrl+wheels
             if (event.type === 'wheel') return event.ctrlKey && !event.button;
           }
           return (!event.ctrlKey || event.type === 'wheel') && !event.button;
         }).on('zoom', this.handleZoom);
         this.setOptions(opts);
         this.state = {
-          id: this.options.id || this.svg.attr('id') || getId(),
+          id: this.options.id || this.svg.attr('id'),
           minX: 0,
           maxX: 0,
           minY: 0,
           maxY: 0
         };
         this.g = this.svg.append('g');
-        this.revokers.push(refreshHook.tap(() => {
-          this.setData();
-        }));
+
       }
       getStyleContent() {
         const {
@@ -422,7 +226,7 @@
         const style = this.getStyleContent();
         this.styleNode.text(style);
       }
-      toggleNode(hashdata, data, recursive = false) {
+      toggleNode(hashdata, data) {
         var _data$payload2;
         var _data$fold = (_data$payload2 = data.payload) != null && _data$payload2.fold ? 0 : 1;
         if(!_data$fold && !data.hasChild){
@@ -435,96 +239,83 @@
                 var data$childObj = {
                   content: element.content,
                   children: [
-                    {content: "NULL"}
+                    {content: "N",
+                    isNull: true}
                   ],
                   payload:{"fold":1}
                 };
                 data.children.push(data$childObj);
-              });
-          }
-          this.initializeData(data);
+            });
+            }
+          this.initializeDataArr(data);
         }
-        data.payload = _extends({}, data.payload, {
-          fold: _data$fold
-        });
-        this.renderData(data);
+          data.payload = _extends({}, data.payload, {
+            fold: _data$fold
+          });
+          this.renderData(data);
       }
-      initializeData(node) {
-        let nodeId = 0;
-        const {
-          color,
-          nodeMinHeight,
-          maxWidth,
-          initialExpandLevel
-        } = this.options;
-        const {
-          id
-        } = this.state;
-        const container = mountDom(jsx("div", {
+      initdom() {
+        const {id} = this.state;
+        const container = mount(jsx("div", {
           className: `markmap-container markmap ${id}-g`
         }));
-        const style = mountDom(jsx("style", {
+        const style = mount(jsx("style", {
           children: [this.getStyleContent(), css_248z].join('\n')
         }));
+        this.container = container;
         document.body.append(container, style);
-        const groupStyle = maxWidth ? `max-width: ${maxWidth}px` : '';
-        let foldRecursively = 0;
-        modwalkTree(node, (item, next, parent) => {
-          var _item$children, _parent$state, _item$payload;
-          item.children = (_item$children = item.children) == null ? void 0 : _item$children.map(child => _extends({}, child));
-          nodeId += 1;
-          const group = mountDom(jsx("div", {
-            className: "markmap-foreign",
-            style: groupStyle,
-            children: jsx("div", {
-              dangerouslySetInnerHTML: {
-                __html: item.content
-              }
-            })
-          }));
-          container.append(group);
+      }
+      getgrp(content){
+        return mount(jsx("div", {
+          className: "markmap-foreign",
+          style: '',
+          children: jsx("div", {
+            dangerouslySetInnerHTML: {
+              __html: content
+            }
+          })
+        }));
+      }
+
+      initializeDataNode(item) {
+        const {color,nodeMinHeight} = this.options;
+        const group = this.getgrp(item.content);
+        this.container.append(group);
+        item.state = _extends({}, item.state, {
+          id: 1,
+          el: group.firstChild
+        });
+        item.state.path = '1';
+        const state = item.state;
+        const rect = state.el.getBoundingClientRect();
+        item.content = state.el.innerHTML;
+        state.size = [Math.ceil(rect.width) + 1, Math.max(Math.ceil(rect.height), nodeMinHeight)];
+        state.key = state.id + item.content;
+        color(item);
+      }
+
+      initializeDataArr(node) {
+        const {
+          color,
+          nodeMinHeight
+        } = this.options;
+        node.children.forEach((item, ind, arr) => {
+          const group = this.getgrp(item.content);
+          this.container.append(group);
           item.state = _extends({}, item.state, {
-            id: nodeId,
+            id: ind+1,
             el: group.firstChild
           });
-          item.state.path = [parent == null || (_parent$state = parent.state) == null ? void 0 : _parent$state.path, item.state.id].filter(Boolean).join('.');
-          color(item); // preload colors
-    
-          const isFoldRecursively = ((_item$payload = item.payload) == null ? void 0 : _item$payload.fold) === 2;
-          if (isFoldRecursively) {
-            foldRecursively += 1;
-          } else if (foldRecursively || initialExpandLevel >= 0 && item.depth >= initialExpandLevel) {
-            item.payload = _extends({}, item.payload, {
-              fold: 1
-            });
-          }
-          next();
-          if (isFoldRecursively) foldRecursively -= 1;
-        });
-        const nodes = Array.from(container.childNodes).map(group => group.firstChild);
-        this.viewHooks.transformHtml.call(this, nodes);
-        // Clone the rendered HTML and set `white-space: nowrap` to it to detect its max-width.
-        // The parent node will have a width of the max-width and the original content without
-        // `white-space: nowrap` gets re-layouted, then we will get the expected layout, with
-        // content in one line as much as possible, and subjecting to the given max-width.
-        nodes.forEach(node => {
-          var _node$parentNode;
-          (_node$parentNode = node.parentNode) == null || _node$parentNode.append(node.cloneNode(true));
-        });
-        modwalkTree(node, (item, next, parent) => {
-          var _parent$state2;
+          item.state.path = [node.state.path, item.state.id].join('.');
           const state = item.state;
           const rect = state.el.getBoundingClientRect();
           item.content = state.el.innerHTML;
           state.size = [Math.ceil(rect.width) + 1, Math.max(Math.ceil(rect.height), nodeMinHeight)];
-          state.key = [parent == null || (_parent$state2 = parent.state) == null ? void 0 : _parent$state2.id, state.id].filter(Boolean).join('.') +
-          // FIXME: find a way to check content hash
-          item.content;
-          next();
+          state.key = item.state.path + item.content;
+          color(item);
         });
-        container.remove();
-        style.remove();
       }
+
       setOptions(opts) {
         this.options = _extends({}, this.options, opts);
         if (this.options.zoom) {
@@ -538,24 +329,50 @@
           this.svg.on('wheel', null);
         }
       }
-      setData(hashdata, diagStr) {
+
+      setDataHash(hashdata, diagStr) {
         if(diagStr)
         {
           this.state.data = {
             content: diagStr,
             children: [
-              {content: "NULL"}
+              {content: "NULL",
+              isNull: true}
             ],
             payload:{"fold":1}
           };
         }
         
-        if (!this.state.data) return;
         if (hashdata) this.state.hashdata = hashdata;
-        this.initializeData(this.state.data);
+        this.state.ishashmap = ishashmap;
+        this.initdom();
+        this.initializeDataNode(this.state.data);
         this.updateStyle();
-        this.renderData();
+        this.renderData(this.state.data);
       }
+
+      setDatanHash(hashdata) {
+        if (hashdata) this.state.data = hashdata;
+        this.state.ishashmap = ishashmap;
+        this.initdom();
+        this.setAllNodesnHash(this.state.data);
+        this.updateStyle();
+        this.renderData(this.state.data);
+      }
+
+      setAllNodesnHash(dobj) 
+      {
+        this.initializeDataNode(dobj);
+        var stack = [dobj];
+        while (stack?.length > 0){
+          const curnObj = stack.pop();
+          if(curnObj.children?.length > 0){
+            this.initializeDataArr(curnObj);
+          }
+          curnObj.children?.forEach(cobj => stack.push(cobj));
+        }
+      }
+
       renderData(originData) {
         var _origin$data$state$x, _origin$data$state$y;
         if (!this.state.data) return;
@@ -594,8 +411,7 @@
         const origin = originData && descendants.find(item => item.data === originData) || tree;
         const x0 = (_origin$data$state$x = origin.data.state.x0) != null ? _origin$data$state$x : origin.x;
         const y0 = (_origin$data$state$y = origin.data.state.y0) != null ? _origin$data$state$y : origin.y;
-    
-        // Update the nodes
+
         const node = this.g.selectAll(childSelector('g')).data(descendants, d => d.data.state.key);
         const nodeEnter = node.enter().append('g').attr('data-depth', d => d.data.depth).attr('data-path', d => d.data.state.path).attr('transform', d => `translate(${y0 + origin.ySize - d.ySize},${x0 + origin.xSize / 2 - d.xSize})`);
         const nodeExit = this.transition(node.exit());
@@ -608,13 +424,11 @@
         });
         this.transition(nodeMerge).attr('transform', d => `translate(${d.y},${d.x - d.xSize / 2})`);
     
-        // Update lines under the content
         const line = nodeMerge.selectAll(childSelector('line')).data(d => [d], d => d.data.state.key).join(enter => {
           return enter.append('line').attr('x1', d => d.ySize - spacingHorizontal).attr('x2', d => d.ySize - spacingHorizontal);
         }, update => update, exit => exit.remove());
         this.transition(line).attr('x1', -1).attr('x2', d => d.ySize - spacingHorizontal + 2).attr('y1', d => d.xSize).attr('y2', d => d.xSize).attr('stroke', d => color(d.data)).attr('stroke-width', linkWidth);
     
-        // Circle to link to children of the node
         const circle = nodeMerge.selectAll(childSelector('circle')).data(d => {
           var _d$data$children;
           return (_d$data$children = d.data.children) != null && _d$data$children.length ? [d] : [];
@@ -625,18 +439,18 @@
           var _d$data$payload2;
           return (_d$data$payload2 = d.data.payload) != null && _d$data$payload2.fold && d.data.children ? color(d.data) : '#fff';
         });
-        const foreignObject = nodeMerge.selectAll(childSelector('foreignObject')).data(d => [d], d => d.data.state.key).join(enter => {
-          const fo = enter.append('foreignObject').attr('class', 'markmap-foreign').attr('x', paddingX).attr('y', 0).style('opacity', 0).on('mousedown', stopPropagation).on('dblclick', stopPropagation);
-          fo.append('xhtml:div').select(function select(d) {
-            const clone = d.data.state.el.cloneNode(true);
-            this.replaceWith(clone);
-            return clone;
-          }).attr('xmlns', 'http://www.w3.org/1999/xhtml');
-          return fo;
-        }, update => update, exit => exit.remove()).attr('width', d => Math.max(0, d.ySize - spacingHorizontal - paddingX * 2)).attr('height', d => d.xSize);
-        this.transition(foreignObject).style('opacity', 1);
-    
-        // Update the links
+
+        const ground = nodeMerge.selectAll(childSelector('ground')).data(d => {
+            return (d.data.isNull === true) ? [d] : [];
+        }, d => d.data.state.key).join(enter => {
+          return enter.append('circle').attr('stroke-width', '3').attr('cx', d => d.ySize - spacingHorizontal).attr('cy', d => d.xSize).attr('r', 0);
+        }, update => update, exit => exit.remove());
+        this.transition(ground).attr('r', 3).attr('cx', d => d.ySize - spacingHorizontal).attr('cy', d => d.xSize).attr('stroke', d => color(d.data)).attr('fill', d => {
+          var _d$data$payload2;
+          return (_d$data$payload2 = d.data.payload) != null && _d$data$payload2.fold && d.data.children ? color(d.data) : '#fff';
+        });
+
+        
         const path = this.g.selectAll(childSelector('path')).data(links, d => d.target.data.state.key).join(enter => {
           const source = [y0 + origin.ySize - spacingHorizontal, x0 + origin.xSize / 2];
           return enter.insert('path', 'g').attr('class', 'markmap-link').attr('data-depth', d => d.target.data.depth).attr('data-path', d => d.target.data.state.path).attr('d', linkShape({
@@ -660,11 +474,24 @@
             target
           });
         });
+
+        const foreignObject = nodeMerge.selectAll(childSelector('foreignObject')).data(d => [d], d => d.data.state.key).join(enter => {
+          const fo = enter.append('foreignObject').attr('class', 'markmap-foreign').attr('x', paddingX).attr('y', 0).style('opacity', 0).on('mousedown', stopPropagation).on('dblclick', stopPropagation);
+          fo.append('xhtml:div').select(function select(d) {
+            let clone = d.data.state.el.cloneNode(true);
+            this.replaceWith(clone);
+            return clone;
+          }).attr('xmlns', 'http://www.w3.org/1999/xhtml');
+          return fo;
+        }, update => update, exit => exit.remove()).attr('width', d => !d.data.isNull ? Math.max(0, d.ySize - spacingHorizontal - paddingX * 2) : 1).attr('height', d => d.xSize);
+        this.transition(foreignObject).style('opacity', 1);
+    
         descendants.forEach(d => {
           d.data.state.x0 = d.x;
           d.data.state.y0 = d.y;
         });
       }
+
       transition(sel) {
         const {
           duration
@@ -672,9 +499,6 @@
         return sel.transition().duration(duration);
       }
     
-      /**
-       * Fit the content to the viewport.
-       */
       async fit() {
         const svgNode = this.svg.node();
         const {
@@ -693,10 +517,11 @@
         const naturalWidth = maxY - minY;
         const naturalHeight = maxX - minX;
         const scale = Math.min(offsetWidth / naturalWidth * fitRatio, offsetHeight / naturalHeight * fitRatio, 2);
-        const initialZoom = d3.zoomIdentity.translate((offsetWidth - naturalWidth * scale) / 2 - minY * scale, (offsetHeight - naturalHeight * scale) / 2 - minX * scale).scale(scale);
+        // const initialZoom = d3.zoomIdentity.translate((offsetWidth - naturalWidth * scale) / 2 - minY * scale, (offsetHeight - naturalHeight * scale) / 2 - minX * scale).scale(scale);
+        const initialZoom = d3.zoomIdentity.translate(50,(offsetHeight - naturalHeight * scale) / 2 - minX * scale).scale(scale);
         return this.transition(this.svg).call(this.zoom.transform, initialZoom).end().catch(noop);
       }
-
+    
       destroy() {
         this.svg.on('.zoom', null);
         this.svg.html(null);
@@ -704,16 +529,22 @@
           fn();
         });
       }
-      static create(svg, hashdata, data = null) {
+
+      static create(svg, hashdata, data = null, ishashmap) {
         const mm = new Markmap(svg, null);
-        if (data) {
-          mm.setData(hashdata,data);
-          mm.fit(); 
+        if(ishashmap)
+        {
+          mm.setDataHash(hashdata,data, ishashmap);
         }
-    
+        else
+        {
+          mm.setDatanHash(hashdata,data, ishashmap);
+        }
+        mm.fit();
         return mm;
       }
     }
+
     Markmap.defaultOptions = {
       autoFit: false,
       color: node => {
@@ -734,51 +565,9 @@
       pan: true,
       toggleRecursively: false
     };
-    function deriveOptions(jsonOptions) {
-      const derivedOptions = {};
-      const options = _extends({}, jsonOptions);
-      const {
-        color,
-        colorFreezeLevel
-      } = options;
-      if ((color == null ? void 0 : color.length) === 1) {
-        const solidColor = color[0];
-        derivedOptions.color = () => solidColor;
-      } else if (color != null && color.length) {
-        const colorFn = d3.scaleOrdinal(color);
-        derivedOptions.color = node => colorFn(`${node.state.path}`);
-      }
-      if (colorFreezeLevel) {
-        const color = derivedOptions.color || Markmap.defaultOptions.color;
-        derivedOptions.color = node => {
-          node = _extends({}, node, {
-            state: _extends({}, node.state, {
-              path: node.state.path.split('.').slice(0, colorFreezeLevel).join('.')
-            })
-          });
-          return color(node);
-        };
-      }
-      const numberKeys = ['duration', 'maxWidth', 'initialExpandLevel'];
-      numberKeys.forEach(key => {
-        const value = options[key];
-        if (typeof value === 'number') derivedOptions[key] = value;
-      });
-      const booleanKeys = ['zoom', 'pan'];
-      booleanKeys.forEach(key => {
-        const value = options[key];
-        if (value != null) derivedOptions[key] = !!value;
-      });
-      return derivedOptions;
-    }
-    
+        
     exports.Markmap = Markmap;
     exports.defaultColorFn = defaultColorFn;
-    exports.deriveOptions = deriveOptions;
     exports.globalCSS = globalCSS;
-    exports.loadCSS = loadCSS;
-    exports.loadJS = loadJS;
-    exports.refreshHook = refreshHook;
     
-    })(this.markmap = this.markmap || {}, null, d3);
-    
+    })(this.markmap = {}, d3);
