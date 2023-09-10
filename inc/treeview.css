@@ -26,11 +26,12 @@ body {
     right:25px;
     position:absolute;
     width: 350;
+    
   }
   
-  form {
+  #inputcont {
     color: #555;
-    display: flex;
+    display: none;
     padding: 2px;
     border: 1px solid currentColor;
     border-radius: 5px;

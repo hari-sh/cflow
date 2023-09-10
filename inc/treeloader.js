@@ -23,11 +23,16 @@ const makeDataObj = (dobj) => {
     return dataObj;
   }
 
-const loadTreeData = (hashdata, diaginput) => {
+const loadTreeData = (hashdata, diaginput, ishash) => {
   const diagstr = diaginput.value;
   diaginput.value = "";
   window.mm?.destroy();
-  window.mm = window.markmap.Markmap.create('svg#mindmap', hashdata, diagstr);
+  window.mm = window.markmap.Markmap.create('svg#mindmap', hashdata, diagstr, ishash);
+}
+
+const loadActualData = (hashdata, ishash) => {
+  window.mm?.destroy();
+  window.mm = window.markmap.Markmap.create('svg#mindmap', hashdata, null, ishash);
 }
 
 function searchHandler(e) {
@@ -57,26 +62,39 @@ function searchHandler(e) {
   }
 }
 
-function useSuggestion(e, hashdata, diaginput) {
+function useSuggestion(e, hashdata, diaginput, ishash) {
   diaginput.value = e.target.innerText;
   diaginput.focus();
   suggestions.innerHTML = '';
   suggestions.classList.remove('has-suggestions');
-  loadTreeData(hashdata, diaginput);
+  loadTreeData(hashdata, diaginput, ishash);
 }
 
-const hashdata = makeDataObj(datajson);
-const hashkeys = Object.keys(hashdata);
-const diaginput = document.getElementById('diaginput');
-const suggestions = document.querySelector('.suggestions ul');
-const diagbtn = document.getElementById("diagbtn");
 
-diaginput.addEventListener('keypress', (e) => {
-if (e.key === 'Enter') {
-    e.preventDefault();
-    loadTreeData(hashdata, diaginput);
+if(!ishashmap)
+{
+  loadActualData(datajson, ishashmap);
 }
-});
-diagbtn.addEventListener("click", () => loadTreeData(hashdata, diaginput));
-diaginput.addEventListener('keyup', (e) => searchHandler(e, hashkeys));
-suggestions.addEventListener('click', (e) => useSuggestion(e, hashdata, diaginput));
+else
+{
+  const inputcont = document.getElementById('inputcont');
+  const diaginput = document.getElementById('diaginput');
+  const suggestions = document.querySelector('.suggestions ul');
+  const diagbtn = document.getElementById("diagbtn");
+
+  const hashdata = makeDataObj(datajson);
+  const hashkeys = Object.keys(hashdata);
+  
+  inputcont.style.display = 'flex';
+  
+  diaginput.addEventListener('keypress', (e) => {
+    if (e.key === 'Enter') {
+        e.preventDefault();
+        loadTreeData(hashdata, diaginput, ishashmap);
+    }
+    });
+  diagbtn.addEventListener("click", () => loadTreeData(hashdata, diaginput, ishashmap));
+  diaginput.addEventListener('keyup', (e) => searchHandler(e, hashkeys));
+  suggestions.addEventListener('click', (e) => useSuggestion(e, hashdata, diaginput, ishashmap));
+}
+

@@ -330,7 +330,7 @@
         }
       }
 
-      setData(hashdata, diagStr) {
+      setDataHash(hashdata, diagStr) {
         if(diagStr)
         {
           this.state.data = {
@@ -343,13 +343,36 @@
           };
         }
         
-        if (!this.state.data) return;
         if (hashdata) this.state.hashdata = hashdata;
+        this.state.ishashmap = ishashmap;
         this.initdom();
         this.initializeDataNode(this.state.data);
         this.updateStyle();
         this.renderData(this.state.data);
       }
+
+      setDatanHash(hashdata) {
+        if (hashdata) this.state.data = hashdata;
+        this.state.ishashmap = ishashmap;
+        this.initdom();
+        this.setAllNodesnHash(this.state.data);
+        this.updateStyle();
+        this.renderData(this.state.data);
+      }
+
+      setAllNodesnHash(dobj) 
+      {
+        this.initializeDataNode(dobj);
+        var stack = [dobj];
+        while (stack?.length > 0){
+          const curnObj = stack.pop();
+          if(curnObj.children?.length > 0){
+            this.initializeDataArr(curnObj);
+          }
+          curnObj.children?.forEach(cobj => stack.push(cobj));
+        }
+      }
+
       renderData(originData) {
         var _origin$data$state$x, _origin$data$state$y;
         if (!this.state.data) return;
@@ -507,12 +530,17 @@
         });
       }
 
-      static create(svg, hashdata, data = null) {
+      static create(svg, hashdata, data = null, ishashmap) {
         const mm = new Markmap(svg, null);
-        if (data) {
-          mm.setData(hashdata,data);
-          mm.fit();
+        if(ishashmap)
+        {
+          mm.setDataHash(hashdata,data, ishashmap);
         }
+        else
+        {
+          mm.setDatanHash(hashdata,data, ishashmap);
+        }
+        mm.fit();
         return mm;
       }
     }

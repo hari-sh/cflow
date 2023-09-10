@@ -11,7 +11,7 @@ docstart ='''<!DOCTYPE html>
   </head>
   
   <body>
-    <div class="container">
+    <div class="container" id="inputcont">
         <form>
         <input id="diaginput" type="text" placeholder="Search...">
         <button id="diagbtn" type="button">Search</button>
@@ -26,14 +26,15 @@ docstart ='''<!DOCTYPE html>
     <script src="../inc/d3-flextree.js"></script>
     <script src="../inc/treeview.js"></script>
     <script>
+const ishashmap = true;
 const datajson =
 '''
 
-docend = '''  </script>
+docend = '''
+    </script>
     <script src="../inc/treeloader.js"></script>
   </body>
 </html>
-
 '''
 
 class QMapNode:
