@@ -16,12 +16,6 @@
       return _extends.apply(this, arguments);
     }
     
-    const uniqId = Math.random().toString(36).slice(2, 8);
-    let globalIndex = 0;
-    function getId() {
-      globalIndex += 1;
-      return `mm-${uniqId}-${globalIndex}`;
-    }
     function noop() {
     }
 
@@ -47,7 +41,6 @@
     }
 
     const VTYPE_ELEMENT = 1;
-    const VTYPE_FUNCTION = 2;
     const SVG_NS = 'http://www.w3.org/2000/svg';
     const XLINK_NS = 'http://www.w3.org/1999/xlink';
     const NS_ATTRS = {
@@ -58,29 +51,30 @@
     
     const isLeaf = c => typeof c === 'string' || typeof c === 'number';
     const isElement = c => (c == null ? void 0 : c.vtype) === VTYPE_ELEMENT;
-    const isRenderFunction = c => (c == null ? void 0 : c.vtype) === VTYPE_FUNCTION;
 
     function jsx(type, props) {
       let vtype;
-      if (typeof type === 'string') vtype = VTYPE_ELEMENT;else if (typeof type === 'function') vtype = VTYPE_FUNCTION;else throw new Error('Invalid VNode type');
+      if (typeof type === 'string') 
+        vtype = VTYPE_ELEMENT;
       return {
         vtype,
         type,
         props
       };
     }
-    function Fragment(props) {
-      return props.children;
-    }
     
     const DEFAULT_ENV = {
       isSvg: false
     };
+
     function insertDom(parent, nodes) {
-      if (!Array.isArray(nodes)) nodes = [nodes];
+      if (!Array.isArray(nodes)) 
+        nodes = [nodes];
       nodes = nodes.filter(Boolean);
-      if (nodes.length) parent.append(...nodes);
+      if (nodes.length) 
+        parent.append(...nodes);
     }
+
     function mountAttributes(domElement, props, env) {
       for (const key in props) {
         if (key === 'key' || key === 'children' || key === 'ref') continue;
@@ -122,28 +116,6 @@
       return Array.isArray(children) ? flatten(children.map(child => mountChildren(child, env))) : mount(children, env);
     }
     function mount(vnode, env = DEFAULT_ENV) {
-      if (vnode == null || typeof vnode === 'boolean') {
-        return null;
-      }
-      if (vnode instanceof Node) {
-        return vnode;
-      }
-      if (isRenderFunction(vnode)) {
-        const {
-          type,
-          props
-        } = vnode;
-        if (type === Fragment) {
-          const node = document.createDocumentFragment();
-          if (props.children) {
-            const children = mountChildren(props.children, env);
-            insertDom(node, children);
-          }
-          return node;
-        }
-        const childVNode = type(props);
-        return mount(childVNode, env);
-      }
       if (isLeaf(vnode)) {
         return document.createTextNode(`${vnode}`);
       }
@@ -230,7 +202,7 @@
         }).on('zoom', this.handleZoom);
         this.setOptions(opts);
         this.state = {
-          id: this.options.id || this.svg.attr('id') || getId(),
+          id: this.options.id || this.svg.attr('id'),
           minX: 0,
           maxX: 0,
           minY: 0,
@@ -267,7 +239,8 @@
                 var data$childObj = {
                   content: element.content,
                   children: [
-                    {content: "NULL"}
+                    {content: "N",
+                    isNull: true}
                   ],
                   payload:{"fold":1}
                 };
@@ -338,7 +311,7 @@
           const rect = state.el.getBoundingClientRect();
           item.content = state.el.innerHTML;
           state.size = [Math.ceil(rect.width) + 1, Math.max(Math.ceil(rect.height), nodeMinHeight)];
-          state.key = [node.state.id, state.id].filter(Boolean).join('.') + item.content;
+          state.key = item.state.path + item.content;
           color(item);
         });
       }
@@ -363,7 +336,8 @@
           this.state.data = {
             content: diagStr,
             children: [
-              {content: "NULL"}
+              {content: "NULL",
+              isNull: true}
             ],
             payload:{"fold":1}
           };
@@ -396,7 +370,6 @@
           return a.parent === b.parent ? spacingVertical : spacingVertical * 2;
         });
         const tree = layout.hierarchy(this.state.data);
-        // const tree = layout.hierarchy(originData);
         layout(tree);
         const descendants = tree.descendants().reverse();
         const links = tree.links();
@@ -415,8 +388,7 @@
         const origin = originData && descendants.find(item => item.data === originData) || tree;
         const x0 = (_origin$data$state$x = origin.data.state.x0) != null ? _origin$data$state$x : origin.x;
         const y0 = (_origin$data$state$y = origin.data.state.y0) != null ? _origin$data$state$y : origin.y;
-        console.log(origin.data.content + '-> ' +x0 + ' ' + y0)
-        // Update the nodes
+
         const node = this.g.selectAll(childSelector('g')).data(descendants, d => d.data.state.key);
         const nodeEnter = node.enter().append('g').attr('data-depth', d => d.data.depth).attr('data-path', d => d.data.state.path).attr('transform', d => `translate(${y0 + origin.ySize - d.ySize},${x0 + origin.xSize / 2 - d.xSize})`);
         const nodeExit = this.transition(node.exit());
@@ -444,17 +416,18 @@
           var _d$data$payload2;
           return (_d$data$payload2 = d.data.payload) != null && _d$data$payload2.fold && d.data.children ? color(d.data) : '#fff';
         });
-        const foreignObject = nodeMerge.selectAll(childSelector('foreignObject')).data(d => [d], d => d.data.state.key).join(enter => {
-          const fo = enter.append('foreignObject').attr('class', 'markmap-foreign').attr('x', paddingX).attr('y', 0).style('opacity', 0).on('mousedown', stopPropagation).on('dblclick', stopPropagation);
-          fo.append('xhtml:div').select(function select(d) {
-            const clone = d.data.state.el.cloneNode(true);
-            this.replaceWith(clone);
-            return clone;
-          }).attr('xmlns', 'http://www.w3.org/1999/xhtml');
-          return fo;
-        }, update => update, exit => exit.remove()).attr('width', d => Math.max(0, d.ySize - spacingHorizontal - paddingX * 2)).attr('height', d => d.xSize);
-        this.transition(foreignObject).style('opacity', 1);
-    
+
+        const ground = nodeMerge.selectAll(childSelector('ground')).data(d => {
+            return (d.data.isNull === true) ? [d] : [];
+        }, d => d.data.state.key).join(enter => {
+          return enter.append('circle').attr('stroke-width', '3').attr('cx', d => d.ySize - spacingHorizontal).attr('cy', d => d.xSize).attr('r', 0);
+        }, update => update, exit => exit.remove());
+        this.transition(ground).attr('r', 3).attr('cx', d => d.ySize - spacingHorizontal).attr('cy', d => d.xSize).attr('stroke', d => color(d.data)).attr('fill', d => {
+          var _d$data$payload2;
+          return (_d$data$payload2 = d.data.payload) != null && _d$data$payload2.fold && d.data.children ? color(d.data) : '#fff';
+        });
+
+        
         const path = this.g.selectAll(childSelector('path')).data(links, d => d.target.data.state.key).join(enter => {
           const source = [y0 + origin.ySize - spacingHorizontal, x0 + origin.xSize / 2];
           return enter.insert('path', 'g').attr('class', 'markmap-link').attr('data-depth', d => d.target.data.depth).attr('data-path', d => d.target.data.state.path).attr('d', linkShape({
@@ -478,11 +451,24 @@
             target
           });
         });
+
+        const foreignObject = nodeMerge.selectAll(childSelector('foreignObject')).data(d => [d], d => d.data.state.key).join(enter => {
+          const fo = enter.append('foreignObject').attr('class', 'markmap-foreign').attr('x', paddingX).attr('y', 0).style('opacity', 0).on('mousedown', stopPropagation).on('dblclick', stopPropagation);
+          fo.append('xhtml:div').select(function select(d) {
+            let clone = d.data.state.el.cloneNode(true);
+            this.replaceWith(clone);
+            return clone;
+          }).attr('xmlns', 'http://www.w3.org/1999/xhtml');
+          return fo;
+        }, update => update, exit => exit.remove()).attr('width', d => !d.data.isNull ? Math.max(0, d.ySize - spacingHorizontal - paddingX * 2) : 1).attr('height', d => d.xSize);
+        this.transition(foreignObject).style('opacity', 1);
+    
         descendants.forEach(d => {
           d.data.state.x0 = d.x;
           d.data.state.y0 = d.y;
         });
       }
+
       transition(sel) {
         const {
           duration
