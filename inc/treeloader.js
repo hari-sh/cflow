@@ -62,7 +62,7 @@ function searchHandler(e, hashkeys, suggestions) {
   }
 }
 
-function useSuggestion(e, hashdata, diaginput, ishash) {
+function useSuggestion(e, hashdata, diaginput, ishash, suggestions) {
   diaginput.value = e.target.innerText;
   diaginput.focus();
   suggestions.innerHTML = '';
@@ -79,7 +79,7 @@ else
 {
   const inputcont = document.getElementById('inputcont');
   const diaginput = document.getElementById('diaginput');
-  const suggestions = document.querySelector('.suggestions ul');
+  const suggestions = document.getElementById('suggestul');
   const diagbtn = document.getElementById("diagbtn");
 
   const hashdata = makeDataObj(datajson);
@@ -93,8 +93,8 @@ else
         loadTreeData(hashdata, diaginput, ishashmap);
     }
     });
-  diagbtn.addEventListener("click", () => loadTreeData(hashdata, diaginput, ishashmap));
   diaginput.addEventListener('keyup', (e) => searchHandler(e, hashkeys, suggestions));
-  suggestions.addEventListener('click', (e) => useSuggestion(e, hashdata, diaginput, ishashmap));
+  diagbtn.addEventListener("click", () => loadTreeData(hashdata, diaginput, ishashmap));
+  suggestions.addEventListener('click', (e) => useSuggestion(e, hashdata, diaginput, ishashmap, suggestions));
 }
 
