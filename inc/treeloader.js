@@ -35,7 +35,7 @@ const loadActualData = (hashdata, ishash) => {
   window.mm = window.markmap.Markmap.create('svg#mindmap', hashdata, null, ishash);
 }
 
-function searchHandler(e) {
+function searchHandler(e, hashkeys, suggestions) {
   const inputVal = e.currentTarget.value;
   var results = [];
   if (inputVal.length > 0) {
@@ -94,7 +94,7 @@ else
     }
     });
   diagbtn.addEventListener("click", () => loadTreeData(hashdata, diaginput, ishashmap));
-  diaginput.addEventListener('keyup', (e) => searchHandler(e, hashkeys));
+  diaginput.addEventListener('keyup', (e) => searchHandler(e, hashkeys, suggestions));
   suggestions.addEventListener('click', (e) => useSuggestion(e, hashdata, diaginput, ishashmap));
 }
 
