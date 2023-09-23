@@ -1,5 +1,5 @@
-ipfile = r""
-opfile = r""
+ipfile = r"/codes/flowjs/src/flow/fwdflow"
+opfile = r"/codes/flowjs/src/flow/fwd"
 
 ip = open(ipfile)
 op = open(opfile, 'w+')
