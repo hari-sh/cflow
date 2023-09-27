@@ -1,0 +1,33 @@
+{
+  "name": "roltut",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "type": "module",
+  "scripts": {
+    "serve": "./node_modules/.bin/reload -b -d ./app -p 8000 | ./node_modules/.bin/rollup -c -w",
+    "build": "NODE_ENV=production ./node_modules/.bin/rollup -c"
+  },
+  "author": "hari",
+  "license": "ISC",
+  "devDependencies": {
+    "@babel/core": "^7.22.20",
+    "@babel/preset-env": "^7.22.20",
+    "@rollup/plugin-babel": "^5.3.1",
+    "@rollup/plugin-commonjs": "^17.1.0",
+    "@rollup/plugin-eslint": "^8.0.5",
+    "@rollup/plugin-node-resolve": "^11.2.1",
+    "@rollup/plugin-replace": "^2.4.2",
+    "@rollup/plugin-terser": "^0.4.3",
+    "autoprefixer": "^10.4.15",
+    "eslint": "^7.32.0",
+    "less": "^4.2.0",
+    "reload": "^3.2.1",
+    "rollup": "^2.79.1",
+    "rollup-plugin-copy": "^3.5.0",
+    "rollup-plugin-postcss": "^4.0.2"
+  },
+  "browserslist": [
+    "defaults"
+  ]
+}
