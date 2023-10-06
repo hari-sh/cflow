@@ -1,4 +1,12 @@
-* {
+<!DOCTYPE html>
+  <html>
+  <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>Markmap</title>
+    <style>
+        * {
     margin: 0;
     padding: 0;
   }
@@ -108,3 +116,50 @@ ul li:hover {
 input {
   /* border-bottom: 2px solid #e65c00; */
 }
+    </style>
+  </head>
+  
+  <body>
+    <!-- <div id="inputcont"class="container">
+        <form>
+        <input id="diaginput" type="text" placeholder="Search...">
+        <button id="diagbtn" type="button">Search</button>
+        <div id="suggestul"class="suggestions">
+          <ul>
+            <li>List Item One</li>
+            <li>List Item Two</li>
+            <li>List Item Three</li>
+            <li>List Item Four</li>
+            <li>List Item Five</li>
+            <li>List Item Six</li>
+          </ul>
+        </div>
+        </form>
+    </div> -->
+    <script>
+        const box = document.createElement("div");
+        box.className = "container";
+        box.id = "inputcont";
+        const inputform = document.createElement("form");
+        const diaginput = document.createElement("input");
+        diaginput.id = "diaginput";
+        diaginput.type = "text";
+        diaginput.placeholder = "Search...";
+        const diagbtn = document.createElement("button");
+        diagbtn.id = "diagbtn";
+        diagbtn.type = "button";
+        diagbtn.textContent = "Search";
+        const suggestul = document.createElement("div");
+        suggestul.id = "suggestul";
+        suggestul.className = "suggestions";
+        document.body.appendChild(box);
+        box.appendChild(inputform);
+        inputform.appendChild(diaginput);
+        inputform.appendChild(diagbtn);
+        inputform.appendChild(suggestul);
+        const sugg = document.createElement("ul");
+        suggestul.appendChild(sugg);
+    </script>
+  </body>
+
+</html>

@@ -1,31 +1,7 @@
 import { Markmap } from './viewtree';
+import {makeDataObj } from './utils';
 
 let treeview = null;
-
-const printObj = (dobj) => {
-    var stack = [dobj];
-    while (stack?.length > 0){
-        const curnObj = stack.pop();
-        if(curnObj.children?.length > 0){
-            console.log(curnObj.state.key);
-        }
-        curnObj.children?.forEach(cobj => stack.push(cobj));
-    }
-    console.log('over');
-};
-
-const makeDataObj = (dobj) => {
-    var dataObj = {};
-    var stack = [dobj];
-    while (stack?.length > 0){
-        const curnObj = stack.pop();
-        if(curnObj.children?.length > 0){
-            dataObj[curnObj.content] = curnObj;
-        }
-        curnObj.children?.forEach(cobj => stack.push(cobj));
-    }
-    return dataObj;
-};
 
 const loadTreeData = (hashdata, diaginput, ishash) => {
     const diagstr = diaginput.value;
@@ -81,10 +57,28 @@ if(!ishashmap)
 }
 else
 {
-    const inputcont = document.getElementById('inputcont');
-    const diaginput = document.getElementById('diaginput');
-    const suggestions = document.getElementById('suggestul');
-    const diagbtn = document.getElementById('diagbtn');
+    const inputcont = document.createElement("div");
+    inputcont.className = "container";
+    inputcont.id = "inputcont";
+    const inputform = document.createElement("form");
+    const diaginput = document.createElement("input");
+    diaginput.id = "diaginput";
+    diaginput.type = "text";
+    diaginput.placeholder = "Search...";
+    const diagbtn = document.createElement("button");
+    diagbtn.id = "diagbtn";
+    diagbtn.type = "button";
+    diagbtn.textContent = "Search";
+    const suggestul = document.createElement("div");
+    suggestul.id = "suggestul";
+    suggestul.className = "suggestions";
+    document.body.appendChild(inputcont);
+    inputcont.appendChild(inputform);
+    inputform.appendChild(diaginput);
+    inputform.appendChild(diagbtn);
+    inputform.appendChild(suggestul);
+    const sugg = document.createElement("ul");
+    suggestul.appendChild(sugg);
 
     const hashdata = makeDataObj(datajson);
     const hashkeys = Object.keys(hashdata);
@@ -97,8 +91,8 @@ else
             loadTreeData(hashdata, diaginput, ishashmap);
         }
     });
-    diaginput.addEventListener('keyup', (e) => searchHandler(e, hashkeys, suggestions));
+    diaginput.addEventListener('keyup', (e) => searchHandler(e, hashkeys, suggestul));
     diagbtn.addEventListener('click', () => loadTreeData(hashdata, diaginput, ishashmap));
-    suggestions.addEventListener('click', (e) => useSuggestion(e, hashdata, diaginput, ishashmap, suggestions));
+    suggestul.addEventListener('click', (e) => useSuggestion(e, hashdata, diaginput, ishashmap, suggestul));
 }
 

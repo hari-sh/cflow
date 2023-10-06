@@ -1,5 +1,4 @@
 import babel from '@rollup/plugin-babel';
-import eslint from '@rollup/plugin-eslint';
 import resolve from '@rollup/plugin-node-resolve';
 import commonjs from '@rollup/plugin-commonjs';
 import replace from '@rollup/plugin-replace';
@@ -10,19 +9,20 @@ import autoprefixer from 'autoprefixer';
 const srcDir = 'src/treeloader/';
 const distDir = 'app/dist/';
 
-const plugins = () => [
+const rollplugins = () => [
     resolve(),
     commonjs(),
-    eslint({
-        fix: true,
-        exclude: ['./node_modules/**', './src/styles/**']
-    }),
+    // eslint({
+    //     fix: true,
+    //     exclude: ['./node_modules/**', './src/styles/**']
+    // }),
     babel({
-        exclude: 'node_modules/**',
+        babelrc: false,
+        exclude: ['./node_modules/**', './src/**'],
         babelHelpers: 'bundled'
     }),
     replace({
-        exclude: 'node_modules/**',
+        exclude: ['node_modules/**', './src/static_data/**'],
         preventAssignment: true,
         ENV: JSON.stringify(process.env.NODE_ENV || 'development')
     }),
@@ -45,14 +45,14 @@ function setupBuild(src, dist, name) {
             name,
             globals: 
             { 
-                d3: 'd3', 
                 ishashmap: 'ishashmap',
+                d3: 'd3', 
                 datajson: 'datajson' 
             },
             sourcemap: (process.env.NODE_ENV === 'production' ? false : 'inline')
         },
         external: ['d3', 'ishashmap', 'datajson'],
-        plugins: plugins(),
+        plugins: rollplugins(),
         onwarn: function (warning, warner) {
             if (warning.code === 'CIRCULAR_DEPENDENCY') {
                 if (warning.importer && warning.importer.startsWith('node_modules/')) {
