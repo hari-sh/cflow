@@ -5,11 +5,11 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta http-equiv="X-UA-Compatible" content="ie=edge">
     <title>Markmap</title>
-    <link rel="stylesheet" href="../inc/treeview.css">
+    <link rel="stylesheet" href="../../inc/treeview.css">
   </head>
   
   <body>
-    <div class="container">
+    <div class="container" id="inputcont">
         <form>
         <input id="diaginput" type="text" placeholder="Search...">
         <button id="diagbtn" type="button">Search</button>
@@ -20,10 +20,70 @@
     </div>
 
     <svg id="mindmap"></svg>
-    <script src="../inc/d3.js"></script>
-    <script src="../inc/d3-flextree.js"></script>
-    <script src="../inc/treeview.js"></script>
-    <script src="../data/abcde.js"></script>
-    <script src="../inc/treeloader.js"></script>
+    <script src="../../inc/d3.js"></script>
+    <script src="../../inc/d3-flextree.js"></script>
+    <script src="../../inc/sweetalert.js"></script>
+    <script src="../../inc/treeview.js"></script>
+    <script>
+const ishashmap = true;
+const datajson =
+{
+  "content": "sample",
+  "children": [
+    {
+      "content": "a",
+      "children": [
+        {
+          "content": "b",
+          "children": [
+            {
+              "content": "c"
+            }
+          ]
+        },
+        {
+          "content": "d",
+          "children": [
+            {
+              "content": "e"
+            },
+            {
+              "content": "x",
+              "children": [
+                {
+                  "content": "n"
+                }
+              ]
+            },
+            {
+              "content": "g"
+            }
+          ]
+        },
+        {
+          "content": "h",
+          "children": [
+            {
+              "content": "i",
+              "children": [
+                {
+                  "content": "d"
+                }
+              ]
+            },
+            {
+              "content": "b"
+            }
+          ]
+        },
+        {
+          "content": "m"
+        }
+      ]
+    }
+  ]
+}
+    </script>
+    <script src="../../inc/treeloader.js"></script>
   </body>
 </html>

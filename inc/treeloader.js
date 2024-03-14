@@ -1,8 +1,8 @@
 const printObj = (dobj) => {
   var stack = [dobj];
-  while (stack?.length > 0){
+  while (stack?.length > 0) {
     const curnObj = stack.pop();
-    if(curnObj.children?.length > 0){
+    if (curnObj.children?.length > 0) {
       console.log(curnObj.state.key);
     }
     curnObj.children?.forEach(cobj => stack.push(cobj));
@@ -11,17 +11,17 @@ const printObj = (dobj) => {
 }
 
 const makeDataObj = (dobj) => {
-    var dataObj = {};
-    var stack = [dobj];
-    while (stack?.length > 0){
-      const curnObj = stack.pop();
-      if(curnObj.children?.length > 0){
-        dataObj[curnObj.content] = curnObj;
-      }
-      curnObj.children?.forEach(cobj => stack.push(cobj));
+  var dataObj = {};
+  var stack = [dobj];
+  while (stack?.length > 0) {
+    const curnObj = stack.pop();
+    if (curnObj.children?.length > 0) {
+      dataObj[curnObj.content] = curnObj;
     }
-    return dataObj;
+    curnObj.children?.forEach(cobj => stack.push(cobj));
   }
+  return dataObj;
+}
 
 const loadTreeData = (hashdata, diaginput, ishash) => {
   const diagstr = diaginput.value;
@@ -71,30 +71,38 @@ function useSuggestion(e, hashdata, diaginput, ishash, suggestions) {
 }
 
 
-if(!ishashmap)
-{
-  loadActualData(datajson, ishashmap);
-}
-else
-{
-  const inputcont = document.getElementById('inputcont');
-  const diaginput = document.getElementById('diaginput');
-  const suggestions = document.getElementById('suggestul');
-  const diagbtn = document.getElementById("diagbtn");
+function searchBox() {
+  if (!ishashmap) {
+    loadActualData(datajson, ishashmap);
+  }
+  else {
+    const inputcont = document.getElementById('inputcont');
+    const diaginput = document.getElementById('diaginput');
+    const suggestions = document.getElementById('suggestul');
+    const diagbtn = document.getElementById("diagbtn");
 
-  const hashdata = makeDataObj(datajson);
-  const hashkeys = Object.keys(hashdata);
-  
-  inputcont.style.display = 'flex';
-  
-  diaginput.addEventListener('keypress', (e) => {
-    if (e.key === 'Enter') {
+    const hashdata = makeDataObj(datajson);
+    const hashkeys = Object.keys(hashdata);
+
+    inputcont.style.display = 'flex';
+
+    diaginput.addEventListener('keypress', (e) => {
+      if (e.key === 'Enter') {
         e.preventDefault();
         loadTreeData(hashdata, diaginput, ishashmap);
-    }
+      }
     });
-  diaginput.addEventListener('keyup', (e) => searchHandler(e, hashkeys, suggestions));
-  diagbtn.addEventListener("click", () => loadTreeData(hashdata, diaginput, ishashmap));
-  suggestions.addEventListener('click', (e) => useSuggestion(e, hashdata, diaginput, ishashmap, suggestions));
+    diaginput.addEventListener('keyup', (e) => searchHandler(e, hashkeys, suggestions));
+    diagbtn.addEventListener("click", () => loadTreeData(hashdata, diaginput, ishashmap));
+    suggestions.addEventListener('click', (e) => useSuggestion(e, hashdata, diaginput, ishashmap, suggestions));
+  }
 }
 
+
+function noSearchBox(){
+  const hashdata = makeDataObj(datajson);
+  window.mm?.destroy();
+  window.mm = window.markmap.Markmap.create('svg#mindmap', hashdata, datajson.content, true);
+}
+
+noSearchBox()
