@@ -39,120 +39,41 @@
       return nodes;
     };
   }
-
-  const VTYPE_ELEMENT = 1;
-  const SVG_NS = 'http://www.w3.org/2000/svg';
-  const XLINK_NS = 'http://www.w3.org/1999/xlink';
-  const NS_ATTRS = {
-    show: XLINK_NS,
-    actuate: XLINK_NS,
-    href: XLINK_NS
-  };
   
-  const isLeaf = c => typeof c === 'string' || typeof c === 'number';
-  const isElement = c => (c == null ? void 0 : c.vtype) === VTYPE_ELEMENT;
-
-  function jsx(type, props) {
-    let vtype;
-    if (typeof type === 'string') 
-      vtype = VTYPE_ELEMENT;
-    return {
-      vtype,
-      type,
-      props
-    };
-  }
-  
-  const DEFAULT_ENV = {
-    isSvg: false
-  };
-
-  function insertDom(parent, nodes) {
-    if (!Array.isArray(nodes)) 
-      nodes = [nodes];
-    nodes = nodes.filter(Boolean);
-    if (nodes.length) 
-      parent.append(...nodes);
-  }
-
-  function mountAttributes(domElement, props, env) {
-    for (const key in props) {
-      if (key === 'key' || key === 'children' || key === 'ref') continue;
-      if (key === 'dangerouslySetInnerHTML') {
-        domElement.innerHTML = props[key].__html;
-      } else if (key === 'innerHTML' || key === 'textContent' || key === 'innerText' || key === 'value' && ['textarea', 'select'].includes(domElement.tagName)) {
-        const value = props[key];
-        if (value != null) domElement[key] = value;
-      } else if (key.startsWith('on')) {
-        domElement[key.toLowerCase()] = props[key];
-      } else {
-        setDOMAttribute(domElement, key, props[key], env.isSvg);
-      }
-    }
-  }
   const attrMap = {
     className: 'class',
     labelFor: 'for'
   };
-  function setDOMAttribute(el, attr, value, isSVG) {
-    attr = attrMap[attr] || attr;
-    if (value === true) {
-      el.setAttribute(attr, '');
-    } else if (value === false) {
-      el.removeAttribute(attr);
-    } else {
-      const namespace = isSVG ? NS_ATTRS[attr] : undefined;
-      if (namespace !== undefined) {
-        el.setAttributeNS(namespace, attr, value);
-      } else {
-        el.setAttribute(attr, value);
-      }
-    }
-  }
-  function flatten(arr) {
-    return arr.reduce((prev, item) => prev.concat(item), []);
-  }
-  function mountChildren(children, env) {
-    return Array.isArray(children) ? flatten(children.map(child => mountChildren(child, env))) : mount(children, env);
-  }
-  function mount(vnode, env = DEFAULT_ENV) {
-    if (isLeaf(vnode)) {
+
+  function mount(vnode) {
+    if(vnode == null) return;
+    if (typeof(vnode) === 'string' || typeof(vnode) === 'number') {
       return document.createTextNode(`${vnode}`);
     }
-    if (isElement(vnode)) {
-      let node;
-      const {
-        type,
-        props
-      } = vnode;
-      if (!env.isSvg && type === 'svg') {
-        env = Object.assign({}, env, {
-          isSvg: true
-        });
-      }
-      if (!env.isSvg) {
-        node = document.createElement(type);
-      } else {
-        node = document.createElementNS(SVG_NS, type);
-      }
-      mountAttributes(node, props, env);
-      if (props.children) {
-        let childEnv = env;
-        if (env.isSvg && type === 'foreignObject') {
-          childEnv = Object.assign({}, childEnv, {
-            isSvg: false
-          });
+    else {
+      const { type, props } = vnode;
+      const node = document.createElement(type);
+      for (const key in props) {
+        if (key === 'key' || key === 'children' || key === 'ref') continue;
+        if (key === 'dangerouslySetInnerHTML') {
+          node.innerHTML = props[key].__html;
+        } else {
+          const attr = attrMap[key] || key;
+          node.setAttribute(attr, props[key]);
         }
-        const children = mountChildren(props.children, childEnv);
-        if (children != null) insertDom(node, children);
       }
-      const {
-        ref
-      } = props;
-      if (typeof ref === 'function') ref(node);
+      if (props.children) {
+        let children = mount(props.children);
+        if (children != null) {
+          if (!Array.isArray(children)) 
+            children = [children];
+          children = children.filter(Boolean);
+          if (children.length)
+            node.append(...children);
+        }
+      }
       return node;
     }
-    throw new Error('mount: Invalid Vnode!');
   }
 
   var css_248z$1 = ".markmap{font:300 16px/20px sans-serif}.markmap-link{fill:none}.markmap-node>circle{cursor:pointer}.markmap-foreign{display:inline-block}.markmap-foreign a{color:#0097e6}.markmap-foreign a:hover{color:#00a8ff}.markmap-foreign code{background-color:#f0f0f0;border-radius:2px;color:#555;font-size:calc(1em - 2px);padding:.25em}.markmap-foreign pre{margin:0}.markmap-foreign pre>code{display:block}.markmap-foreign del{text-decoration:line-through}.markmap-foreign em{font-style:italic}.markmap-foreign strong{font-weight:700}.markmap-foreign mark{background:#ffeaa7}";
@@ -235,7 +156,7 @@
       this.styleNode.text(style);
     }
     toggleNode(hashdata, data) {
-      var _data$payload2;
+      var _data$payload2; 
       var _data$fold = (_data$payload2 = data.payload) != null && _data$payload2.fold ? 0 : 1;
       if(!_data$fold && !data.hasChild){
         data.hasChild = true;
@@ -264,64 +185,64 @@
     }
     initdom() {
       const {id} = this.state;
-      const container = mount(jsx("div", {
-        className: `markmap-container markmap ${id}-g`
-      }));
-      const style = mount(jsx("style", {
-        children: [this.getStyleContent(), css_248z].join('\n')
-      }));
+      const container = mount(
+        {
+          type: "div",
+          props: {
+            className: `markmap-container markmap ${id}-g`
+          }
+        });
+      const style = mount(
+        {
+          type: "style", 
+          props: {
+            children: [this.getStyleContent(), css_248z].join('\n')
+          }
+        });
       this.container = container;
       document.body.append(container, style);
     }
     getgrp(content){
-      return mount(jsx("div", {
-        className: "markmap-foreign",
-        style: '',
-        children: jsx("div", {
-          dangerouslySetInnerHTML: {
-            __html: content
+      return mount(
+        {
+          type: "div",
+          props: {
+            className: "markmap-foreign",
+            style: '',
+            children: {
+              type: "div", 
+              props: {
+                dangerouslySetInnerHTML: {
+                  __html: content
+                }
+              }
+            }
           }
         })
-      }));
     }
 
-    initializeDataNode(item) {
+    initializeDataNode(item, ind, path) {
       const {color,nodeMinHeight} = this.options;
       const group = this.getgrp(item.content);
       this.container.append(group);
       item.state = _extends({}, item.state, {
-        id: 1,
+        id: ind + 1,
         el: group.firstChild
       });
-      item.state.path = '1';
+      item.state.path = path;
       const state = item.state;
       const rect = state.el.getBoundingClientRect();
       state.el.onclick = alert;
       item.content = state.el.innerHTML;
       state.size = [Math.ceil(rect.width) + 1, Math.max(Math.ceil(rect.height), nodeMinHeight)];
-      state.key = state.id + item.content;
+      state.key = item.state.path + item.content;
       color(item);
     }
 
     initializeDataArr(node) {
-      const {
-        color,
-        nodeMinHeight
-      } = this.options;
       node.children.forEach((item, ind, arr) => {
-        const group = this.getgrp(item.content);
-        this.container.append(group);
-        item.state = _extends({}, item.state, {
-          id: ind+1,
-          el: group.firstChild
-        });
-        item.state.path = [node.state.path, item.state.id].join('.');
-        const state = item.state;
-        const rect = state.el.getBoundingClientRect();
-        item.content = state.el.innerHTML;
-        state.size = [Math.ceil(rect.width) + 1, Math.max(Math.ceil(rect.height), nodeMinHeight)];
-        state.key = item.state.path + item.content;
-        color(item);
+        const path = [node.state.path, ind+1].join('.');
+        this.initializeDataNode(item, ind, path);
       });
     }
 
@@ -343,47 +264,32 @@
       if(diagStr)
       {
         this.state.data = {
-          content: diagStr,
-          children: [
-            {content: "NULL",
-            isNull: true}
-          ],
-          payload:{"fold":1}
+          content: diagStr
         };
+        this.state.data.children = [];
+          hashdata[diagStr].children.forEach(element=>
+            {
+              var data$childObj = {
+                content: element.content,
+                children: [
+                  {content: "N",
+                  isNull: true}
+                ],
+                payload:{"fold":1}
+              };
+              this.state.data.children.push(data$childObj);
+          });
       }
       
       if (hashdata) this.state.hashdata = hashdata;
-      this.state.ishashmap = ishashmap;
       this.initdom();
-      this.initializeDataNode(this.state.data);
+      this.initializeDataNode(this.state.data, 0, 1);
+      this.initializeDataArr(this.state.data);
       this.updateStyle();
       this.renderData(this.state.data);
-    }
-
-    setDatanHash(hashdata) {
-      if (hashdata) this.state.data = hashdata;
-      this.state.ishashmap = ishashmap;
-      this.initdom();
-      this.setAllNodesnHash(this.state.data);
-      this.updateStyle();
-      this.renderData(this.state.data);
-    }
-
-    setAllNodesnHash(dobj) 
-    {
-      this.initializeDataNode(dobj);
-      var stack = [dobj];
-      while (stack?.length > 0){
-        const curnObj = stack.pop();
-        if(curnObj.children?.length > 0){
-          this.initializeDataArr(curnObj);
-        }
-        curnObj.children?.forEach(cobj => stack.push(cobj));
-      }
     }
 
     renderData(originData) {
-      var _origin$data$state$x, _origin$data$state$y;
       if (!this.state.data) return;
       const {
         spacingHorizontal,
@@ -418,26 +324,40 @@
       });
       if (autoFit) this.fit();
       const origin = originData && descendants.find(item => item.data === originData) || tree;
-      const x0 = (_origin$data$state$x = origin.data.state.x0) != null ? _origin$data$state$x : origin.x;
-      const y0 = (_origin$data$state$y = origin.data.state.y0) != null ? _origin$data$state$y : origin.y;
+      const x0 = origin.x;
+      const y0 = origin.y;
 
       const node = this.g.selectAll(childSelector('g')).data(descendants, d => d.data.state.key);
-      const nodeEnter = node.enter().append('g').attr('data-depth', d => d.data.depth).attr('data-path', d => d.data.state.path).attr('transform', d => `translate(${y0 + origin.ySize - d.ySize},${x0 + origin.xSize / 2 - d.xSize})`);
+      const nodeEnter = node.enter().append('g')
+                        .attr('data-depth', d => d.data.depth)
+                        .attr('data-path', d => d.data.state.path)
+                        .attr('transform', d => `translate(${y0 + origin.ySize - d.ySize},${x0 + origin.xSize / 2 - d.xSize})`);
       const nodeExit = this.transition(node.exit());
-      nodeExit.select('line').attr('x1', d => d.ySize - spacingHorizontal).attr('x2', d => d.ySize - spacingHorizontal);
+      nodeExit.select('line')
+              .attr('x1', d => d.ySize - spacingHorizontal)
+              .attr('x2', d => d.ySize - spacingHorizontal);
       nodeExit.select('foreignObject').style('opacity', 0);
       nodeExit.attr('transform', d => `translate(${origin.y + origin.ySize - d.ySize},${origin.x + origin.xSize / 2 - d.xSize})`).remove();
       const nodeMerge = node.merge(nodeEnter).attr('class', d => {
         var _d$data$payload;
-        return ['markmap-node', ((_d$data$payload = d.data.payload) == null ? void 0 : _d$data$payload.fold) && 'markmap-fold'].filter(Boolean).join(' ');
+        var retval = ['markmap-node', ((_d$data$payload = d.data.payload) == null ? void 0 : _d$data$payload.fold) && 'markmap-fold'].filter(Boolean).join(' ');
+        return retval;
       });
       this.transition(nodeMerge).attr('transform', d => `translate(${d.y},${d.x - d.xSize / 2})`);
-  
-      const line = nodeMerge.selectAll(childSelector('line')).data(d => [d], d => d.data.state.key).join(enter => {
-        return enter.append('line').attr('x1', d => d.ySize - spacingHorizontal).attr('x2', d => d.ySize - spacingHorizontal);
+
+      const line = nodeMerge.selectAll(childSelector('line'))
+                            .data(d => [d], d => d.data.state.key)
+                            .join(enter => {
+        return enter.append('line')
+                    .attr('x1', d => d.ySize - spacingHorizontal)
+                    .attr('x2', d => d.ySize - spacingHorizontal);
       }, update => update, exit => exit.remove());
-      this.transition(line).attr('x1', -1).attr('x2', d => d.ySize - spacingHorizontal + 2).attr('y1', d => d.xSize).attr('y2', d => d.xSize).attr('stroke', d => color(d.data)).attr('stroke-width', linkWidth);
-  
+      this.transition(line)
+      .attr('x1', -1)
+      .attr('x2', d => d.ySize - spacingHorizontal + 2)
+      .attr('y1', d => d.xSize).attr('y2', d => d.xSize)
+      .attr('stroke', d => color(d.data)).attr('stroke-width', linkWidth);
+
       const circle = nodeMerge.selectAll(childSelector('circle')).data(d => {
         var _d$data$children;
         return (_d$data$children = d.data.children) != null && _d$data$children.length ? [d] : [];
@@ -449,12 +369,17 @@
         return (_d$data$payload2 = d.data.payload) != null && _d$data$payload2.fold && d.data.children ? color(d.data) : '#fff';
       });
 
-      const ground = nodeMerge.selectAll(childSelector('ground')).data(d => {
+      const ground = nodeMerge.selectAll(childSelector('square')).data(d => {
           return (d.data.isNull === true) ? [d] : [];
       }, d => d.data.state.key).join(enter => {
-        return enter.append('circle').attr('stroke-width', '3').attr('cx', d => d.ySize - spacingHorizontal).attr('cy', d => d.xSize).attr('r', 0);
+        return enter.append('circle').attr('stroke-width', '3')
+                    .attr('cx', d => d.ySize - spacingHorizontal)
+                    .attr('cy', d => d.xSize).attr('r', 0);
       }, update => update, exit => exit.remove());
-      this.transition(ground).attr('r', 3).attr('cx', d => d.ySize - spacingHorizontal).attr('cy', d => d.xSize).attr('stroke', d => color(d.data)).attr('fill', d => {
+      this.transition(ground).attr('r', 3)
+                    .attr('cx', d => d.ySize - spacingHorizontal)
+                    .attr('cy', d => d.xSize)
+                    .attr('stroke', d => color(d.data)).attr('fill', d => {
         var _d$data$payload2;
         return (_d$data$payload2 = d.data.payload) != null && _d$data$payload2.fold && d.data.children ? color(d.data) : '#fff';
       });
@@ -495,7 +420,7 @@
         return fo;
       }, update => update, exit => exit.remove()).attr('width', d => !d.data.isNull ? Math.max(0, d.ySize - spacingHorizontal - paddingX * 2) : 1).attr('height', d => d.xSize);
       this.transition(foreignObject).style('opacity', 1);
-  
+
       descendants.forEach(d => {
         d.data.state.x0 = d.x;
         d.data.state.y0 = d.y;
@@ -540,16 +465,9 @@
       });
     }
 
-    static create(svg, hashdata, data = null, ishashmap) {
+    static create(svg, hashdata, data = null) {
       const mm = new Markmap(svg, null);
-      if(ishashmap)
-      {
-        mm.setDataHash(hashdata,data, ishashmap);
-      }
-      else
-      {
-        mm.setDatanHash(hashdata,data, ishashmap);
-      }
+      mm.setDataHash(hashdata,data);
       mm.fit();
       return mm;
     }
