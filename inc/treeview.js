@@ -332,20 +332,39 @@
         return (_d$data$payload2 = d.data.payload) != null && _d$data$payload2.fold && d.data.children ? color(d.data) : '#fff';
       });
 
-      const ground = nodeMerge.selectAll(childSelector('square')).data(d => {
-          return (d.data.isNull === true) ? [d] : [];
-      }, d => d.data.state.key).join(enter => {
-        return enter.append('circle').attr('stroke-width', '3')
-                    .attr('cx', d => d.ySize - spacingHorizontal)
-                    .attr('cy', d => d.xSize).attr('r', 0);
-      }, update => update, exit => exit.remove());
-      this.transition(ground).attr('r', 3)
-                    .attr('cx', d => d.ySize - spacingHorizontal)
-                    .attr('cy', d => d.xSize)
-                    .attr('stroke', d => color(d.data)).attr('fill', d => {
-        var _d$data$payload2;
-        return (_d$data$payload2 = d.data.payload) != null && _d$data$payload2.fold && d.data.children ? color(d.data) : '#fff';
-      });
+      // const ground = nodeMerge.selectAll(childSelector('square')).data(d => {
+      //     return (d.data.isNull === true) ? [d] : [];
+      // }, d => d.data.state.key).join(enter => {
+      //   return enter.append('circle').attr('stroke-width', '3')
+      //               .attr('cx', d => d.ySize - spacingHorizontal)
+      //               .attr('cy', d => d.xSize).attr('r', 0);
+      // }, update => update, exit => exit.remove());
+      // this.transition(ground).attr('r', 3)
+      //               .attr('cx', d => d.ySize - spacingHorizontal)
+      //               .attr('cy', d => d.xSize)
+      //               .attr('stroke', d => color(d.data)).attr('fill', d => {
+      //   var _d$data$payload2;
+      //   return (_d$data$payload2 = d.data.payload) != null && _d$data$payload2.fold && d.data.children ? color(d.data) : '#fff';
+      // });
+
+      const ground = nodeMerge.selectAll(childSelector('rect')).data(d => {
+        return (d.data.isNull === true) ? [d] : [];
+    }, d => d.data.state.key).join(enter => {
+      return enter.append('rect').attr('stroke-width', '3')
+      .attr('x', d => d.ySize - spacingHorizontal -3)
+      .attr('y', d => d.xSize -3)
+      .attr('width', 6)
+      .attr('height', 6)
+      .attr('stroke', 'black')
+      .attr('fill', '#69a3b2');
+    }, update => update, exit => exit.remove());
+    this.transition(ground).attr('r', 3)
+                  .attr('cx', d => d.ySize - spacingHorizontal)
+                  .attr('cy', d => d.xSize)
+                  .attr('stroke', d => color(d.data)).attr('fill', d => {
+      var _d$data$payload2;
+      return (_d$data$payload2 = d.data.payload) != null && _d$data$payload2.fold && d.data.children ? color(d.data) : '#fff';
+    });
 
       const path = this.g.selectAll(childSelector('path')).data(links, d => d.target.data.state.key).join(enter => {
         const source = [y0 + origin.ySize - spacingHorizontal, x0 + origin.xSize / 2];
