@@ -1,30 +1,7 @@
 (function (exports, d3, swal) {
   'use strict';
   
-  function _extends() {
-    _extends = Object.assign ? Object.assign.bind() : function (target) {
-      for (var i = 1; i < arguments.length; i++) {
-        var source = arguments[i];
-        for (var key in source) {
-          if (Object.prototype.hasOwnProperty.call(source, key)) {
-            target[key] = source[key];
-          }
-        }
-      }
-      return target;
-    };
-    return _extends.apply(this, arguments);
-  }
-  
   function noop() {
-  }
-
-  function addClass(className, ...rest) {
-    const classList = (className || '').split(' ').filter(Boolean);
-    rest.forEach(item => {
-      if (item && classList.indexOf(item) < 0) classList.push(item);
-    });
-    return classList.join(' ');
   }
 
   function childSelector(filter) {
@@ -76,11 +53,7 @@
     }
   }
 
-  var css_248z$1 = ".markmap{font:300 16px/20px sans-serif}.markmap-link{fill:none}.markmap-node>circle{cursor:pointer}.markmap-foreign{display:inline-block}.markmap-foreign a{color:#0097e6}.markmap-foreign a:hover{color:#00a8ff}.markmap-foreign code{background-color:#f0f0f0;border-radius:2px;color:#555;font-size:calc(1em - 2px);padding:.25em}.markmap-foreign pre{margin:0}.markmap-foreign pre>code{display:block}.markmap-foreign del{text-decoration:line-through}.markmap-foreign em{font-style:italic}.markmap-foreign strong{font-weight:700}.markmap-foreign mark{background:#ffeaa7}";
-  
-  var css_248z = ".markmap-container{height:0;left:-100px;overflow:hidden;position:absolute;top:-100px;width:0}.markmap-container>.markmap-foreign{display:inline-block}.markmap-container>.markmap-foreign>div:last-child,.markmap-container>.markmap-foreign>div:last-child *{white-space:nowrap}";
-  
-  const globalCSS = css_248z$1;
+  const globalCSS = ".markmap{font:300 16px/20px sans-serif}.markmap-link{fill:none}.markmap-node>circle{cursor:pointer}.markmap-foreign{display:inline-block}.markmap-container{height:0;left:-100px;overflow:hidden;position:absolute;top:-100px;width:0}";
   function linkWidth(nodeData) {
     const data = nodeData.data;
     return Math.max(4 - 2 * data.depth, 1.5);
@@ -148,10 +121,10 @@
         id
       } = this.state;
       const styleText = typeof style === 'function' ? style(id) : '';
-      return [this.options.embedGlobalCSS && css_248z$1, styleText].filter(Boolean).join('\n');
+      return [this.options.embedGlobalCSS && globalCSS, styleText].filter(Boolean).join('\n');
     }
     updateStyle() {
-      this.svg.attr('class', addClass(this.svg.attr('class'), 'markmap', this.state.id));
+      this.svg.attr('class', 'markmap mindmap');
       const style = this.getStyleContent();
       this.styleNode.text(style);
     }
@@ -178,10 +151,8 @@
           }
         this.initializeDataArr(data);
       }
-        data.payload = _extends({}, data.payload, {
-          fold: _data$fold
-        });
-        this.renderData(data);
+      data.payload = {fold: _data$fold};
+      this.renderData(data);
     }
     initdom() {
       const {id} = this.state;
@@ -192,15 +163,8 @@
             className: `markmap-container markmap ${id}-g`
           }
         });
-      const style = mount(
-        {
-          type: "style", 
-          props: {
-            children: [this.getStyleContent(), css_248z].join('\n')
-          }
-        });
       this.container = container;
-      document.body.append(container, style);
+      document.body.append(container);
     }
     getgrp(content){
       return mount(
@@ -225,17 +189,15 @@
       const {color,nodeMinHeight} = this.options;
       const group = this.getgrp(item.content);
       this.container.append(group);
-      item.state = _extends({}, item.state, {
+      const rect = group.firstChild.getBoundingClientRect();
+      item.content = group.firstChild.innerHTML;
+      item.state = {
         id: ind + 1,
-        el: group.firstChild
-      });
-      item.state.path = path;
-      const state = item.state;
-      const rect = state.el.getBoundingClientRect();
-      state.el.onclick = alert;
-      item.content = state.el.innerHTML;
-      state.size = [Math.ceil(rect.width) + 1, Math.max(Math.ceil(rect.height), nodeMinHeight)];
-      state.key = item.state.path + item.content;
+        el: group.firstChild,
+        path: path,
+        size: [Math.ceil(rect.width) + 1, Math.max(Math.ceil(rect.height), nodeMinHeight)],
+        key: path + item.content
+      };
       color(item);
     }
 
@@ -247,7 +209,6 @@
     }
 
     setOptions(opts) {
-      this.options = _extends({}, this.options, opts);
       if (this.options.zoom) {
         this.svg.call(this.zoom);
       } else {
@@ -261,31 +222,33 @@
     }
 
     setDataHash(hashdata, diagStr) {
+      this.initdom();
+      this.updateStyle();
       if(diagStr)
       {
         this.state.data = {
           content: diagStr
         };
         this.state.data.children = [];
-          hashdata[diagStr].children.forEach(element=>
-            {
-              var data$childObj = {
-                content: element.content,
-                children: [
-                  {content: "N",
-                  isNull: true}
-                ],
-                payload:{"fold":1}
-              };
-              this.state.data.children.push(data$childObj);
-          });
+        hashdata[diagStr].children.forEach(element => {
+          var data$childObj = {
+            content: element.content,
+            children: [
+              {
+                content: "N",
+                isNull: true
+              }
+            ],
+            payload: { "fold": 1 }
+          };
+          this.state.data.children.push(data$childObj);
+        });
+        this.state.data.hasChild = true;
       }
       
       if (hashdata) this.state.hashdata = hashdata;
-      this.initdom();
       this.initializeDataNode(this.state.data, 0, 1);
       this.initializeDataArr(this.state.data);
-      this.updateStyle();
       this.renderData(this.state.data);
     }
 
@@ -384,7 +347,6 @@
         return (_d$data$payload2 = d.data.payload) != null && _d$data$payload2.fold && d.data.children ? color(d.data) : '#fff';
       });
 
-      
       const path = this.g.selectAll(childSelector('path')).data(links, d => d.target.data.state.key).join(enter => {
         const source = [y0 + origin.ySize - spacingHorizontal, x0 + origin.xSize / 2];
         return enter.insert('path', 'g').attr('class', 'markmap-link').attr('data-depth', d => d.target.data.depth).attr('data-path', d => d.target.data.state.path).attr('d', linkShape({
@@ -409,14 +371,23 @@
         });
       });
 
-      const foreignObject = nodeMerge.selectAll(childSelector('foreignObject')).data(d => [d], d => d.data.state.key).join(enter => {
-        const fo = enter.append('foreignObject').attr('class', 'markmap-foreign').attr('x', paddingX).attr('y', 0).style('opacity', 1).on('mousedown', stopPropagation).on('dblclick', stopPropagation);
-        fo.append('xhtml:div').select(function select(d) {
-          let clone = d.data.state.el.cloneNode(true);
+      const foreignObject = nodeMerge.selectAll(childSelector('foreignObject'))
+                                     .data(d => [d], d => d.data.state.key)
+                                     .join(enter => {
+        const fo = enter.append('foreignObject')
+                        .attr('class', 'markmap-foreign')
+                        .attr('x', paddingX)
+                        .attr('y', 0)
+                        .style('opacity', 1)
+                        .on('dblclick', stopPropagation);
+        fo.append('xhtml:div')
+          .select(function select(d) {
+          // let clone = d.data.state.el.cloneNode(true);
+          let clone = d.data.state.el;
           this.replaceWith(clone);
           clone.onclick = function(){ clickEvent(clone.innerText);}
           return clone;
-        }).attr('xmlns', 'http://www.w3.org/1999/xhtml');
+        });
         return fo;
       }, update => update, exit => exit.remove()).attr('width', d => !d.data.isNull ? Math.max(0, d.ySize - spacingHorizontal - paddingX * 2) : 1).attr('height', d => d.xSize);
       this.transition(foreignObject).style('opacity', 1);
