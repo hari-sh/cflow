@@ -105,7 +105,7 @@
       this.handleClick = (e, d) => {
         let recursive = this.options.toggleRecursively;
         if (isMacintosh ? e.metaKey : e.ctrlKey) recursive = !recursive;
-        this.toggleNode(this.state.hashdata, d.data, recursive);
+        this.toggleNode(d.data, recursive);
       };
       this.svg = svg.datum ? svg : d3.select(svg);
       this.styleNode = this.svg.append('style');
@@ -143,13 +143,13 @@
     }
 
     getkidsraw(data){
-      if(data.children?.length > 0){
+      if(data.origin.children?.length > 0){
         data.hasChild = true;
-        const hashval = this.state.hashdata[data.content]
         let kids = [];
-        hashval.children.forEach(element => {
+        data.origin.children.forEach(element => {
           let data$childObj = {
             content: element.content,
+            origin: element,
             children: [
               {
                 content: "N",
@@ -187,7 +187,7 @@
       }
     }
 
-    toggleNode(hashdata, data) {
+    toggleNode(data) {
       var _data$payload2; 
       var _data$fold = (_data$payload2 = data.payload) != null && _data$payload2.fold ? 0 : 1;
       if(!_data$fold && !data.hasChild){
@@ -267,14 +267,13 @@
     initdata(datajson, diagStr, ishash) {
       if(!diagStr) return;
       if(!ishash) {
-        this.state.data = datajson;
         this.getkids = this.getkidsraw;
         this.state.data = {
-          origin:datajson,
+          origin: datajson,
           content: diagStr,
-          children: this.getkidsraw(datajson),
           hasChild: true
         };
+        this.getkids(this.state.data);
       }
       else  {
         this.state.hashdata = makeDataObj(datajson);
