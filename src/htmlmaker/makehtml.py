@@ -1,39 +1,43 @@
 import json
 
 docstart ='''<!DOCTYPE html>
-  <html>
-  <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta http-equiv="X-UA-Compatible" content="ie=edge">
-    <title>Markmap</title>
-    <link rel="stylesheet" href="../inc/treeview.css">
-  </head>
-  
-  <body>
-    <div class="container" id="inputcont">
-        <form>
-        <input id="diaginput" type="text" placeholder="Search...">
-        <button id="diagbtn" type="button">Search</button>
-        <div class="suggestions">
-          <ul></ul>
-        </div>
-        </form>
-    </div>
+<html>
 
-    <svg id="mindmap"></svg>
-    <script src="../inc/d3.js"></script>
-    <script src="../inc/d3-flextree.js"></script>
-    <script src="../inc/treeview.js"></script>
-    <script>
-const ishashmap = true;
-const datajson =
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta http-equiv="X-UA-Compatible" content="ie=edge">
+  <title>Markmap</title>
+  <link rel="stylesheet" href="../../inc/treeview.css">
+</head>
+
+<body>
+  <div class="container" id="inputcont">
+    <form>
+      <input id="diaginput" type="text" placeholder="Search...">
+      <button id="diagbtn" type="button">Search</button>
+      <div class="suggestions">
+        <ul></ul>
+      </div>
+    </form>
+  </div>
+
+  <svg id="mindmap"></svg>
+  <script src="../../inc/d3.js"></script>
+  <script src="../../inc/d3-flextree.js"></script>
+  <script src="../../inc/sweetalert.js"></script>
+  <script src="../../inc/treeview.js"></script>
+  <script>
+    const datajson =
 '''
 
 docend = '''
-    </script>
-    <script src="../inc/treeloader.js"></script>
-  </body>
+  </script>
+  <script>
+    window.markmap.Markmap.create(datajson, datajson.content, false);
+  </script>
+</body>
+
 </html>
 '''
 
