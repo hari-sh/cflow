@@ -1,6 +1,19 @@
 (function (exports, d3, swal) {
   'use strict';
   
+  const makeDataObj = (dobj) => {
+    var dataObj = {};
+    var stack = [dobj];
+    while (stack?.length > 0) {
+      const curnObj = stack.pop();
+      if (curnObj.children?.length > 0) {
+        dataObj[curnObj.content] = curnObj;
+      }
+      curnObj.children?.forEach(cobj => stack.push(cobj));
+    }
+    return dataObj;
+  }
+
   function noop() {
   }
 
@@ -128,27 +141,57 @@
       const style = this.getStyleContent();
       this.styleNode.text(style);
     }
+
+    getkidsraw(data){
+      if(data.children?.length > 0){
+        data.hasChild = true;
+        const hashval = this.state.hashdata[data.content]
+        let kids = [];
+        hashval.children.forEach(element => {
+          let data$childObj = {
+            content: element.content,
+            children: [
+              {
+                content: "N",
+                isNull: true
+              }
+            ],
+            payload: { "fold": 1 }
+          };
+          kids.push(data$childObj);
+        });
+        data.children = kids;
+      }
+    }
+
+
+    getkidshash(data){
+      if((data.content in this.state.hashdata) && (this.state.hashdata[data.content].children?.length > 0)) {
+        data.hasChild = true;
+        const hashval = this.state.hashdata[data.content]
+        let kids = [];
+        hashval.children.forEach(element => {
+          let data$childObj = {
+            content: element.content,
+            children: [
+              {
+                content: "N",
+                isNull: true
+              }
+            ],
+            payload: { "fold": 1 }
+          };
+          kids.push(data$childObj);
+        });
+        data.children = kids;
+      }
+    }
+
     toggleNode(hashdata, data) {
       var _data$payload2; 
       var _data$fold = (_data$payload2 = data.payload) != null && _data$payload2.fold ? 0 : 1;
       if(!_data$fold && !data.hasChild){
-        data.hasChild = true;
-        if((data.content in hashdata) && (hashdata[data.content].children?.length > 0))
-        {
-          data.children = [];
-          hashdata[data.content].children.forEach(element=>
-            {
-              var data$childObj = {
-                content: element.content,
-                children: [
-                  {content: "N",
-                  isNull: true}
-                ],
-                payload:{"fold":1}
-              };
-              data.children.push(data$childObj);
-          });
-          }
+        this.getkids(data);
         this.initializeDataArr(data);
       }
       data.payload = {fold: _data$fold};
@@ -221,35 +264,35 @@
       }
     }
 
-    setDataHash(hashdata, diagStr) {
+    initdata(datajson, diagStr, ishash) {
+      if(!diagStr) return;
+      if(!ishash) {
+        this.state.data = datajson;
+        this.getkids = this.getkidsraw;
+        this.state.data = {
+          origin:datajson,
+          content: diagStr,
+          children: this.getkidsraw(datajson),
+          hasChild: true
+        };
+      }
+      else  {
+        this.state.hashdata = makeDataObj(datajson);
+        this.getkids = this.getkidshash;
+        this.state.data = {
+          content: diagStr,
+        };
+        this.getkidshash(this.state.data);
+      }
+    }
+
+    initMap() {
       this.initdom();
       this.updateStyle();
-      if(diagStr)
-      {
-        this.state.data = {
-          content: diagStr
-        };
-        this.state.data.children = [];
-        hashdata[diagStr].children.forEach(element => {
-          var data$childObj = {
-            content: element.content,
-            children: [
-              {
-                content: "N",
-                isNull: true
-              }
-            ],
-            payload: { "fold": 1 }
-          };
-          this.state.data.children.push(data$childObj);
-        });
-        this.state.data.hasChild = true;
-      }
-      
-      if (hashdata) this.state.hashdata = hashdata;
       this.initializeDataNode(this.state.data, 0, 1);
       this.initializeDataArr(this.state.data);
       this.renderData(this.state.data);
+      this.fit();
     }
 
     renderData(originData) {
@@ -331,21 +374,6 @@
         var _d$data$payload2;
         return (_d$data$payload2 = d.data.payload) != null && _d$data$payload2.fold && d.data.children ? color(d.data) : '#fff';
       });
-
-      // const ground = nodeMerge.selectAll(childSelector('square')).data(d => {
-      //     return (d.data.isNull === true) ? [d] : [];
-      // }, d => d.data.state.key).join(enter => {
-      //   return enter.append('circle').attr('stroke-width', '3')
-      //               .attr('cx', d => d.ySize - spacingHorizontal)
-      //               .attr('cy', d => d.xSize).attr('r', 0);
-      // }, update => update, exit => exit.remove());
-      // this.transition(ground).attr('r', 3)
-      //               .attr('cx', d => d.ySize - spacingHorizontal)
-      //               .attr('cy', d => d.xSize)
-      //               .attr('stroke', d => color(d.data)).attr('fill', d => {
-      //   var _d$data$payload2;
-      //   return (_d$data$payload2 = d.data.payload) != null && _d$data$payload2.fold && d.data.children ? color(d.data) : '#fff';
-      // });
 
       const ground = nodeMerge.selectAll(childSelector('rect')).data(d => {
         return (d.data.isNull === true) ? [d] : [];
@@ -455,10 +483,10 @@
       });
     }
 
-    static create(svg, hashdata, data = null) {
-      const mm = new Markmap(svg, null);
-      mm.setDataHash(hashdata,data);
-      mm.fit();
+    static create(datajson, diagStr, ishash) {
+      const mm = new Markmap('svg#mindmap', null);
+      mm.initdata(datajson, diagStr, ishash);
+      mm.initMap();
       return mm;
     }
   }

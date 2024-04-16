@@ -26,7 +26,6 @@
   <script src="../../inc/sweetalert.js"></script>
   <script src="../../inc/treeview.js"></script>
   <script>
-    const ishashmap = true;
     const datajson =
     {
       "content": "sample",
@@ -80,7 +79,9 @@
       ]
     }
   </script>
-  <script src="../../inc/treeloader.js"></script>
+  <script>
+    window.markmap.Markmap.create(datajson, datajson.content, true);
+  </script>
 </body>
 
 </html>
